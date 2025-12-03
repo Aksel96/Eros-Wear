@@ -1,0 +1,79 @@
+{{! views/visitors.hbs }}
+
+<style>
+    /* ----------------------------------- */
+    /* Estilos de la marca Eros Wear */
+    /* ----------------------------------- */
+    .brand-title {
+        font-family: 'Cinzel', serif;
+        color: #5E35B1; /* Deep Amethyst */
+        font-weight: 700;
+    }
+    .brand-subtitle {
+        color: #B7926F; /* Rose Gold Muted */
+        font-family: 'Lato', sans-serif;
+    }
+    .brand-badge {
+        background-color: #5E35B1 !important; /* Deep Amethyst para el badge */
+    }
+</style>
+
+<h1 class="text-center my-4 brand-title pt-3">Usuarios Registrados en Eros Wear</h1>
+<p class="lead text-center brand-subtitle">Conoce a la comunidad de la marca</p>
+
+{{!-- CONTROLES DE ORDENAMIENTO --}}
+<div class="row justify-content-end mb-4">
+    <div class="col-md-4 col-lg-3">
+        {{!-- Asegúrate de que la acción apunte a la ruta correcta, ej: /creators --}}
+        <form method="GET" action="/visitors" class="d-flex align-items-center">
+            <label for="sort-select" class="form-label small mb-0 me-2 text-muted">Ordenar por:</label>
+            <select name="sort_by" id="sort-select" class="form-select form-select-sm" onchange="this.form.submit()">
+                <option value="newest" {{#if (eq currentSort 'newest')}}selected{{/if}}>Más Recientes</option>
+                <option value="likes" {{#if (eq currentSort 'likes')}}selected{{/if}}>Popularidad (Total de Likes)</option>
+            </select>
+        </form>
+    </div>
+</div>
+
+<hr>
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        {{#if visitors}}
+        {{!-- 1. Elimina la etiqueta <ul> innecesaria --}}
+
+            <div class="row justify-content-center">
+                {{!-- El bucle itera sobre las columnas que son las tarjetas --}}
+                {{#each visitors}}
+
+                {{!-- Define el tamaño de cada tarjeta/columna --}}
+                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 mb-4">
+                        <div class="card h-100 shadow-sm" style="border: 1px solid #ddd;">
+                            <div class="card-body">
+                                <h5 class="card-title">{{this.nickname}}</h5>
+                                <p class="card-text text-muted small">
+                                    {{!-- Se recomienda remover el emoji y ajustar el tamaño del badge --}}
+                                    <span class="badge bg-danger" style="font-size: medium"> 💖 Likes Totales: {{this.total_likes}}</span>
+                                    <br>
+                                Miembro desde: {{formatDateShort this.created_at}}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                {{/each}}
+            </div>
+        {{else}}
+            <div class="row justify-content-center">
+                <div class="col-md-8">
+                    <div class="alert alert-warning text-center">
+                        Aún no hay usuarios registrados
+                    </div>
+                </div>
+            </div>
+        {{/if}}
+    </div>
+</div>
+
+<div class="text-center mt-4">
+    <a href="/" class="btn btn-secondary">Volver al Inicio</a>
+</div>

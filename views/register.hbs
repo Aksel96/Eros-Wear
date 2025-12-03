@@ -1,0 +1,78 @@
+{{! views/register.hbs }}
+
+<style>
+    /* Estilos de la marca Eros Wear para el título */
+    .brand-header {
+        background-color: #B7926F !important; /* Deep Amethyst */
+        font-family: 'Cinzel', serif;
+        font-weight: 600;
+    }
+    /* Estilos para el botón principal (Registro) */
+    .register-btn {
+        background-color: #B7926F; /* Deep Amethyst */
+        border-color: #5E35B1;
+        color: white;
+    }
+    .register-btn:hover {
+        background-color: #7953c5;
+        border-color: #7953c5;
+        color: white;
+    }
+    /* Estilo para el enlace en el footer */
+    .brand-link {
+        color: #5E35B1;
+    }
+</style>
+
+<div class="row mt-5">
+    <div class="col-md-6 mx-auto">
+        <div class="card shadow">
+
+            {{!-- CABECERA CON ESTILO DE MARCA --}}
+            <div class="card-header text-center brand-header">
+                {{!-- Aseguramos el color blanco con text-white --}}
+                <h3 class="mb-0 text-white">Registrar Nuevo Usuario</h3>
+            </div>
+
+            <div class="card-body">
+                {{!-- FORMULARIO DE REGISTRO --}}
+                <form action="/register" method="POST" id="registrationForm">
+
+                    <div class="mb-3">
+                        <label for="nickname" class="form-label">Apodo / Nombre</label>
+                        <input type="text" id="nickname" name="nickname" class="form-control" required>
+                        <div id="nicknameFeedback" class="invalid-feedback"></div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Correo Electrónico</label>
+                        <input type="email" id="email" name="email" class="form-control" required>
+                        <div id="emailFeedback" class="invalid-feedback"></div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Contraseña</label>
+                        <input type="password" id="password" name="password" class="form-control" required>
+                        <div id="passwordFeedback" class="invalid-feedback"></div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="confirm_password" class="form-label">Confirmar Contraseña</label>
+                        <input type="password" id="confirm_password" class="form-control" required>
+                        <div id="confirmPasswordFeedback" class="invalid-feedback"></div>
+                    </div>
+
+                    {{!-- BOTÓN PRINCIPAL CON ESTILO DE MARCA --}}
+                    <button type="submit" class="btn register-btn w-100">Registrarme</button>
+                </form>
+            </div>
+
+            <div class="card-footer text-center">
+                <small>¿Ya tienes cuenta? <a href="/login" class="brand-link">Inicia Sesión aquí</a></small>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{!-- Incluir el script de validación después del formulario --}}
+<script src="/js/validation.js"></script>

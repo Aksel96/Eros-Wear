@@ -1,0 +1,64 @@
+{{! views/login.hbs }}
+
+<style>
+    /* Estilos de la marca Eros Wear para el título */
+    .brand-header {
+        background-color: #B7926F !important; /* Deep Amethyst */
+        color: white;
+        font-family: 'Cinzel', serif;
+        font-weight: 600;
+    }
+    /* Estilos para el botón principal */
+    .login-btn {
+        background-color: #B7926F; /* Deep Amethyst */
+        border-color: #5E35B1;
+        color: white;
+    }
+    .login-btn:hover {
+        background-color: #7953c5;
+        border-color: #7953c5;
+        color: white;
+    }
+</style>
+
+<div class="row mt-5">
+    <div class="col-md-5 mx-auto">
+        <div class="card shadow">
+
+            {{!-- CABECERA CON ESTILO DE MARCA --}}
+            <div class="card-header text-center brand-header">
+                <h3 class="mb-0 text-white">Iniciar Sesión</h3>
+            </div>
+
+            <div class="card-body">
+                {{!-- Mostrar mensajes flash --}}
+                {{#if error_msg}}
+                    <div class="alert alert-danger">{{error_msg}}</div>
+                {{/if}}
+                {{#if success_msg}}
+                    <div class="alert alert-success">{{success_msg}}</div>
+                {{/if}}
+
+                <form action="/login" method="POST">
+
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Correo Electrónico</label>
+                        <input type="email" id="email" name="email" class="form-control" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Contraseña</label>
+                        <input type="password" id="password" name="password" class="form-control" required>
+                    </div>
+
+                    {{!-- BOTÓN PRINCIPAL CON ESTILO DE MARCA --}}
+                    <button type="submit" class="btn login-btn w-100">Entrar</button>
+                </form>
+            </div>
+
+            <div class="card-footer text-center">
+                <small>¿No tienes cuenta? <a href="/register" style="color: #5E35B1;">Regístrate aquí</a></small>
+            </div>
+        </div>
+    </div>
+</div>

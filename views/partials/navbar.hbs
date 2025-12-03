@@ -1,0 +1,67 @@
+{{! views/partials/navbar.hbs }}
+
+{{!-- Fondo Deep Amethyst (#5E35B1) y navbar-dark para texto blanco --}}
+<nav class="navbar navbar-expand-lg navbar-light navbar-custom">
+    <div class="container">
+
+        {{!-- MARCA: Sin emoji y color blanco --}}
+        <a class="navbar-brand" href="/" style="color: white; font-family: 'Cinzel', serif;">
+            Eros Wear
+        </a>
+
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarNav">
+
+            {{!-- Sección de Navegación Principal --}}
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="/">Inicio</a>
+                </li>
+                {{!-- ¡NUEVO ENLACE! --}}
+                <li class="nav-item">
+                    <a class="nav-link" href="/shop">Catálogo</a>
+                </li>
+                <li class="nav-item">
+                    {{!-- Texto simplificado --}}
+                    <a class="nav-link" href="/tester">Creador de Outfits</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/gallery">Galería Social</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/visitors">Comunidad</a>
+                </li>
+            </ul>
+
+            {{!-- Sección de Autenticación --}}
+            <ul class="navbar-nav ms-auto">
+                {{#if user}}
+                {{!-- VISTAS PARA USUARIO LOGUEADO --}}
+                    <li class="nav-item">
+                        {{!-- Saludo en blanco --}}
+                        <span class="nav-link" style="color: white;">
+                            Bienvenido, <b>{{user.nickname}}</b>
+                        </span>
+                    </li>
+                    <li class="nav-item">
+                        {{!-- Botón de contorno blanco --}}
+                        <a class="btn btn-outline-light ms-2" href="/logout">Cerrar Sesión</a>
+                    </li>
+                {{else}}
+                {{!-- VISTAS PARA VISITANTES --}}
+                    <li class="nav-item">
+                        {{!-- Botón de contorno blanco --}}
+                        <a class="btn btn-light" style="color: #5E35B1;" href="/login">Iniciar Sesión</a>
+                    </li>
+                    <li class="nav-item">
+                        {{!-- Botón de registro con fondo blanco y texto morado --}}
+                        <a class="btn btn-light ms-2" style="color: #5E35B1;" href="/register">Registro</a>
+                    </li>
+                {{/if}}
+            </ul>
+        </div>
+    </div>
+</nav>

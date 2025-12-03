@@ -1,0 +1,174 @@
+
+/* public/css/style.css (AGREGAR AL INICIO) */
+
+/* 1. Resetear altura para que el body ocupe toda la ventana */
+html, body {
+    height: 100%;
+    margin: 0;
+}
+
+/* 2. El contenedor principal que aplica la lógica Flexbox */
+.page-wrapper {
+    display: flex;
+    flex-direction: column; /* Apila los hijos verticalmente */
+    min-height: 100vh; /* Asegura que ocupe al menos la altura de la ventana */
+}
+
+/* 3. El área de contenido que debe crecer y empujar el footer hacia abajo */
+.content-area {
+    flex: 1; /* Le dice a este elemento que consuma todo el espacio vertical sobrante */
+}
+
+
+h1, h2, h3 {
+    /* La fuente 'Cinzel' se usará. Si no está disponible, se usará 'serif'. */
+    font-family: 'Cinzel', serif;
+    color: #263238; /* Charcoal Dusk */
+}
+body, button, input {
+    /* La fuente 'Lato' se usará. Si no está disponible, se usará 'sans-serif'. */
+    font-family: 'Lato', sans-serif;
+    font-size: 16px;
+}
+
+body{
+    background-color: #F5F5F5;
+}
+
+.success-popup {
+    position: fixed;
+    top: 20%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #28a745; /* Verde Bootstrap */
+    color: white;
+    padding: 15px 30px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    z-index: 1050;
+    animation: fadeOut 2.5s forwards;
+}
+
+@keyframes fadeOut {
+    0% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+    80% { opacity: 1; }
+    100% { opacity: 0; transform: translate(-50%, -50%) scale(0.9); }
+}
+
+.stack-container {
+    position: relative;
+    width: 100%;
+    height: 400px; /* Altura fija para centrar el efecto */
+}
+
+.stack-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%); /* Centrar tanto horizontal como verticalmente */
+    z-index: 1; /* Fondo */
+
+    /* Estilo de la marca */
+    font-family: 'Cinzel', serif;
+    font-size: 3.5rem;
+    color: rgba(94, 53, 177, 0.15); /* Deep Amethyst muy transparente */
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.stack-image {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 2; /* Frente, por encima del texto */
+    max-height: 90%; /* Limitar el tamaño de la imagen */
+    max-width: 90%;
+    object-fit: contain;
+    filter: drop-shadow(0 0 10px rgba(0, 0, 0, 0.4));
+}
+
+
+
+/* public/css/style.css (AGREGAR AL FINAL) */
+
+/* Estado inicial: Transparente y Fijo */
+.navbar-custom {
+    transition: background-color 0.3s ease, padding 0.3s ease;
+    background-color: #F5F5F5 !important;
+    position: fixed; /* Mantiene la barra fija en la parte superior */
+    width: 100%;
+    top: 0;
+    z-index: 1030; /* Asegura que esté por encima de todo */
+}
+
+/* Estado de Scroll: Color sólido y texto en blanco */
+.navbar-custom.navbar-scrolled {
+    background-color: #000000 !important; /* Deep Amethyst */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+/* Ajuste de color de marca cuando está transparente (necesita ser visible en el fondo blanco) */
+.navbar-custom .navbar-brand,
+.navbar-custom .nav-link {
+    color: #263238 !important; /* Charcoal Dusk para contraste inicial */
+}
+
+/* Ajuste de color de marca cuando está scrolleado */
+.navbar-custom.navbar-scrolled .navbar-brand,
+.navbar-custom.navbar-scrolled .nav-link,
+.navbar-custom.navbar-scrolled .btn-outline-light {
+    color: white !important;
+}
+
+/* Ajuste específico para el brand name en estado transparente (si usa color personalizado) */
+.navbar-custom .navbar-brand {
+    color: #000000 !important; /* Deep Amethyst siempre visible */
+}
+
+/* Estilos necesarios para la sección Sobre Nosotros */
+.brand-title {
+    font-family: 'Cinzel', serif;
+    color: #5E35B1; /* Deep Amethyst */
+    font-weight: 700;
+}
+.brand-subtitle {
+    color: #263238; /* Charcoal Dusk */
+    font-family: 'Lato', sans-serif;
+}
+.brand-accent {
+    color: #B7926F; /* Rose Gold Muted */
+    font-family: 'Cinzel', serif;
+}
+.about-section {
+    padding: 50px 0;
+    line-height: 1.8;
+}
+
+
+/* views/tester.hbs (AGREGAR ESTILOS) */
+
+.fab-advisor {
+    position: fixed;
+    bottom: 20px; /* Distancia desde la parte inferior */
+    right: 20px; /* Distancia desde la derecha */
+    height: 50px;
+    padding: 0 15px;
+    border-radius: 15px; /* Bordes redondeados */
+    border: none;
+    z-index: 1040; /* Muy alto para estar siempre por encima */
+
+    /* Colores de la Marca */
+    background-color: #8756ec; /* Deep Amethyst */
+    color: white;
+    font-weight: bold;
+    font-size: 1rem;
+    transition: transform 0.2s;
+}
+
+.fab-advisor:hover {
+    background-color: #7953c5;
+    transform: scale(1.05); /* Efecto al pasar el ratón */
+}
+
+

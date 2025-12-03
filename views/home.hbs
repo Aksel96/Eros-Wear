@@ -1,0 +1,366 @@
+{{! views/home.hbs }}
+
+<style>
+    /* ----------------------------------- */
+    /* Estilos basados en Guía de Marca */
+    /* ----------------------------------- */
+
+    /* Nuevo estilo para la fuente gruesa y moderna */
+    .hero-title {
+        font-family: 'Montserrat', sans-serif; /* Usamos Montserrat (debe estar importada) */
+        color: #5E35B1; /* Deep Amethyst */
+        font-size: 3.5rem;
+        font-weight: 900; /* Peso extra-grueso */
+        text-transform: uppercase;
+    }
+
+    /* Nuevo estilo para el efecto Outline */
+    .hero-title-outline {
+        font-family: 'Montserrat', sans-serif;
+        font-size: 4.5rem;
+        font-weight: 900;
+        text-transform: uppercase;
+
+        /* 1. Hacer el relleno de texto transparente */
+        color: transparent;
+
+        /* 2. Aplicar el borde (stroke) del grosor deseado */
+        /* El borde será Deep Amethyst o Negro para contraste */
+        -webkit-text-stroke: 2px #5E35B1;
+        text-stroke: 2px #5E35B1; /* Propiedad estándar, aunque menos soportada */
+    }
+
+    /* Nuevo estilo para el efecto Outline */
+    .hero-title-outline-sub {
+        font-family: 'Montserrat', sans-serif;
+        font-weight: 800;
+        text-transform: uppercase;
+
+        /* 1. Hacer el relleno de texto transparente */
+        color: transparent;
+
+        /* 2. Aplicar el borde (stroke) del grosor deseado */
+        /* El borde será Deep Amethyst o Negro para contraste */
+        -webkit-text-stroke: 2px #5E35B1;
+        text-stroke: 2px #5E35B1; /* Propiedad estándar, aunque menos soportada */
+    }
+
+
+    .hero-section {
+        padding: 80px 0;
+        min-height: 70vh;
+    }
+
+    .cta-button {
+        background-color: #5E35B1; /* Deep Amethyst */
+        border: none;
+        color: white;
+    }
+    .cta-button:hover {
+        background-color: #7953c5;
+    }
+    .accent-text {
+        color: #B7926F; /* Rose Gold Muted */
+        font-family: 'Cinzel', serif;
+    }
+
+    /* ----------------------------------- */
+    /* Animación Atrevida (Req 5) */
+    /* ----------------------------------- */
+    .animated-garment {
+        width: 100%;
+        max-width: 350px;
+        transform: scale(0.9);
+        animation: float-garment 3s ease-in-out infinite alternate;
+        transition: transform 0.3s ease;
+    }
+    .animated-garment:hover {
+        transform: scale(1.05); /* Escala al pasar el ratón (Req 5: Mouse) */
+    }
+
+    /* Nuevo CSS en tu bloque <style> */
+    .animated-garment.custom-shadow {
+        /* box-shadow: none; ¡Asegúrate de que no haya un box-shadow! */
+        filter: drop-shadow(0 0 10px rgba(0, 0, 0, 0.4)); /* Esto respeta la transparencia */
+    }
+
+    @keyframes float-garment {
+        from { transform: translateY(0px) rotate(1deg); }
+        to { transform: translateY(-15px) rotate(-1deg); }
+    }
+
+    /* Estilo para el contenedor general de cada sección */
+    .section-card {
+        background-color: white;
+        border-radius: 15px; /* Bordes suaves */
+        padding: 40px 30px; /* Padding interno grande */
+        margin-bottom: 50px; /* Separación clara entre tarjetas */
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1); /* Sombra suave para el efecto de elevación */
+    }
+
+</style>
+
+{{! views/home.hbs (CÓDIGO MODIFICADO CON WRAPPERS) }}
+
+{{!-- ********************************************************************* --}}
+{{!-- 1. SECCIÓN HERO (MARKETING Y SLOGAN) --}}
+{{!-- ********************************************************************* --}}
+<div class="section-card mt-5">
+    <div class="row hero-section align-items-center">
+
+        <div class="col-md-7">
+            {{!-- TÍTULO PRINCIPAL: APLICAMOS LA CLASE OUTLINE --}}
+            <h1 class="hero-title-outline mb-3">Eros Wear</h1>
+
+            <h2 class="hero-title mb-4 accent-text" style="color: #5E35B1;">Viste la Audacia</h2>
+            <hr>
+            <p class="lead text-dark" style="font-family: 'Lato', sans-serif;">
+                Somos la marca que fusiona la elegancia atemporal con el espíritu más audaz.
+            </p>
+
+            <a href="/shop" class="btn cta-button btn-lg shadow mt-4 me-3">
+                Explora Nuestro Catálogo
+            </a>
+            <a href="/tester" class="btn btn-outline-dark btn-lg mt-4">
+                Ir al Creador de Outfits
+            </a>
+            <a href="/gallery" class="btn btn-outline-dark btn-lg mt-4">
+                Galería de la Comunidad
+            </a>
+        </div>
+
+        {{!-- PRENDA ANIMADA --}}
+        <div class="col-md-5 text-center">
+            <img src="/img/garments/chaqueta-morada.png"
+                 alt="Diseño Destacado"
+                 class="animated-garment custom-shadow">
+        </div>
+
+    </div>
+</div> {{!-- FIN de SECTION CARD 1 --}}
+
+
+{{!-- ********************************************************************* --}}
+{{!-- 2. SECCIÓN CARRUSEL ALEATORIO (#TRENDING) --}}
+{{!-- ********************************************************************* --}}
+<div class="section-card">
+    <div class="row my-5 ">
+        <div class="col-12">
+            <h3 class="text-center hero-title-outline-sub mb-4" style="font-size: 3.5rem;">#Trending Topic</h3>
+        </div>
+
+        <div class="col-md-8 mx-auto">
+            <div id="randomGarmentCarousel" class="carousel slide shadow-lg" data-bs-ride="carousel">
+                {{!-- ... Contenido del Carrusel Aleatorio (randomGarments) ... --}}
+
+                {{!-- Pegar el contenido de carousel-inner y controles aquí --}}
+                <div class="carousel-inner">
+                    {{#each randomGarments}}
+                        <div class="carousel-item {{#if @first}}active{{/if}}">
+                            <div class="stack-container">
+                                {{!-- TEXTO EN EL FONDO (Z-INDEX: 1) --}}
+                                <div class="stack-text">
+                                    {{name}} {{name}} {{name}}
+                                    <br> {{name}} {{name}} {{name}}
+                                    <br> {{name}} {{name}} {{name}}
+                                    <br> {{name}} {{name}} {{name}}
+                                    <br> {{name}} {{name}} {{name}}
+                                    <br> {{name}} {{name}} {{name}}
+                                    <br> {{name}} {{name}} {{name}}
+                                </div>
+                                {{!-- IMAGEN EN EL FRENTE (Z-INDEX: 2) --}}
+                                <img src="{{image_url}}" alt="{{name}}" class="stack-image">
+                            </div>
+
+                            <div class="carousel-caption d-none d-md-block" style="position: static; color: #263238; padding-bottom: 20px;">
+                                <small>{{name}} | Visita el catálogo </small>
+                            </div>
+                        </div>
+                    {{/each}}
+                    {{#unless randomGarments}}
+                        <div class="carousel-item active p-5 text-center">
+                            <p class="lead text-muted">No hay prendas en el catálogo</p>
+                        </div>
+                    {{/unless}}
+                </div>
+
+                {{!-- CONTROLES DEL CARRUSEL --}}
+                <button class="carousel-control-prev" type="button" data-bs-target="#randomGarmentCarousel" data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon bg-secondary rounded-circle" aria-hidden="true"></span>
+                    <span class="visually-hidden">Previous</span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#randomGarmentCarousel" data-bs-slide="next">
+                    <span class="carousel-control-next-icon bg-secondary rounded-circle" aria-hidden="true"></span>
+                    <span class="visually-hidden">Next</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div> {{!-- FIN de SECTION CARD 2 --}}
+
+
+{{!-- ********************************************************************* --}}
+{{!-- 3. SECCIÓN SOBRE NOSOTROS --}}
+{{!-- ********************************************************************* --}}
+<div class="section-card">
+    <div class="about-section">
+        <div class="row">
+
+            <div class="col-12 text-center mb-5">
+                <h2 class="hero-title-outline-sub" style="font-size: 3.5rem;">
+                    Sobre Nosotros
+                </h2>
+                <p class="lead brand-subtitle">
+                    Elegancia audaz, con corazón mexicano.
+                </p>
+            </div>
+
+            {{!-- Columna 1: Narrativa de la Marca --}}
+            <div class="col-md-7">
+                <h3 class="brand-title mb-4">La Fusión de la Mitología y el Street Wear</h3>
+                <p style="font-family: 'Lato', sans-serif;">
+                    Eros Wear nació de la idea de que la moda debe ser una expresión de la belleza y la audacia interior. Inspirados en el dios griego Eros, símbolo de la atracción y el deseo, creamos prendas que fusionan el corte clásico con las texturas y el diseño atrevido del street wear contemporáneo.
+                </p>
+                <p style="font-family: 'Lato', sans-serif;">
+                    Cada diseño en nuestro catálogo es una declaración, diseñada para aquellos que no temen destacar. Nuestro objetivo es que te vistas con la misma confianza con la que te atreves a desear.
+                </p>
+
+                <h3 class="brand-title mt-5 mb-3 brand-accent" style="font-size: 1.5rem;">
+                    Hecho en México 🇲🇽
+                </h3>
+                <p style="font-family: 'Lato', sans-serif;">
+                    Somos una marca orgullosamente mexicana. Toda nuestra conceptualización, diseño y, cuando es posible, nuestra manufactura, se realiza en México. Creemos en el talento local y nos comprometemos a mantener un estándar de alta calidad, ética y diseño que trascienda fronteras. Al elegir Eros Wear, apoyas la moda creativa y el diseño nacional.
+                </p>
+            </div>
+
+            {{!-- Columna 2: Imagen y Resumen --}}
+            <div class="col-md-5 text-center d-flex align-items-stretch">
+                {{!-- ... Contenido de la Tarjeta Resumen ... --}}
+                <div class="card shadow-lg p-4 w-100" style="border-radius: 15px;">
+                    <div class="card-body d-flex flex-column justify-content-between">
+                        <div>
+                            <h4 class="brand-title" style="color: #5E35B1;">Nuestra última colección</h4>
+                            {{!-- PRENDA ANIMADA --}}
+                            <div class="col-md- aling-items-stretch text-center">
+                                <img src="/img/garments/Peach Sunrise.png"
+                                     alt="Diseño Destacado"
+                                     class="animated-garment custom-shadow">
+                            </div>
+                        </div>
+
+                        <a href="/shop" class="btn w-100 mt-4" style="background-color: #5E35B1; color: white;">
+                            Ver Colección
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div> {{!-- FIN de SECTION CARD 3 --}}
+
+
+{{!-- ********************************************************************* --}}
+{{!-- 4. SECCIÓN CARRUSEL POPULAR (TOP OUTFITS) --}}
+{{!-- ********************************************************************* --}}
+<div class="section-card">
+    <div class="row my-5">
+
+        <h2 class="hero-title-outline-sub  text-center mb-4 " style="font-size: 3.5rem">Outfits Populares</h2>
+
+
+        <div class="col-md-10 mx-auto">
+            {{!-- Contenido del Carrusel Top Outfits --}}
+            <div id="topOutfitsCarousel" class="carousel slide shadow-lg" data-bs-ride="carousel">
+
+                <div class="carousel-inner">
+                    {{#each topOutfits}}
+                        <div class="carousel-item {{#if @first}}active{{/if}}">
+                            <div class="row align-items-center p-4">
+
+                                {{!-- LADO IZQUIERDO: RENDERIZADO DEL OUTFIT --}}
+                                <div class="col-md-6 text-center">
+                                    <div class="carousel-outfit-canvas border border-secondary bg-white position-relative mx-auto"
+                                         style="width: 100%; height: 400px; overflow: hidden;"
+                                         data-outfit-items="{{json items}}">
+                                        <p class="text-muted p-5">Cargando outfit...</p>
+                                    </div>
+                                </div>
+
+                                {{!-- LADO DERECHO: DETALLES --}}
+                                <div class="col-md-6 p-4">
+                                    <h4 class="brand-title">{{name}}</h4>
+                                    <p class="lead brand-subtitle">
+                                        <span class="badge bg-danger fs-5">❤️ {{likesCount}} Likes</span>
+                                    </p>
+                                    <p class="text-muted">Diseñado por: {{creator}}</p>
+                                    <a href="/gallery" class="btn cta-button">Ver en la Galería</a>
+                                </div>
+                            </div>
+                        </div>
+                    {{/each}}
+
+                    {{#unless topOutfits}}
+                        <div class="carousel-item active p-5 text-center">
+                            <p class="lead text-muted">Aún no hay diseños destacados en la comunidad</p>
+                        </div>
+                    {{/unless}}
+                </div>
+
+                {{!-- CONTROLES DEL CARRUSEL --}}
+                <button class="carousel-control-prev" type="button" data-bs-target="#topOutfitsCarousel" data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon bg-dark rounded-circle" aria-hidden="true"></span>
+                    <span class="visually-hidden">Previous</span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#topOutfitsCarousel" data-bs-slide="next">
+                    <span class="carousel-control-next-icon bg-dark rounded-circle" aria-hidden="true"></span>
+                    <span class="visually-hidden">Next</span>
+                </button>
+            </div>
+
+        </div>
+    </div>
+</div> {{!-- FIN de SECTION CARD 4 --}}
+
+
+{{!-- ********************************************************************* --}}
+{{!-- 5. SECCIÓN NEWSLETTER --}}
+{{!-- ********************************************************************* --}}
+<div class="section-card">
+    <div class="row my-5">
+        <div class="col-lg-10 mx-auto text-center">
+            <h2 class="hero-title-outline-sub mb-4" style="font-size: 2.5rem">
+                Suscríbete a nuestro newsletter!
+            </h2>
+            {{!-- Formulario de Suscripción --}}
+
+            <form id="newsletter-form" class="d-flex justify-content-center">
+                <div class="input-group" style="max-width: 500px;">
+                    <input
+                            type="email"
+                            class="form-control form-control-lg"
+                            placeholder="Tu correo electrónico (ej: usuario@dominio.com)"
+                            aria-label="Correo electrónico para suscripción"
+                            required
+                    >
+                    <button
+                            class="btn btn-lg text-white"
+                            type="submit"
+                            style="background-color: #B7926F; border-color: #B7926F;">
+                        Suscribirme
+                    </button>
+                </div>
+            </form>
+
+            <div id="newsletter-message" class="mt-3 small text-success" style="height: 20px;"></div>
+            <p class="lead text-muted mb-4">
+                Recibe las últimas tendencias, lanzamientos y ofertas especiales de Eros Wear directamente en tu bandeja de entrada.
+            </p>
+        </div>
+    </div>
+</div> {{!-- FIN de SECTION CARD 5 --}}
+
+
+{{!-- ... (Aquí sigue el carrusel de Top Outfits) ... --}}
+
+<script src="/js/home-carousel.js"></script>
