@@ -1,23 +1,31 @@
 {
-  "name": "proyectofinal",
-  "version": "0.0.0",
+  "name": "eros-wear",
+  "version": "2.0.0",
   "private": true,
   "scripts": {
-    "start": "node app.js"
+    "start": "node app.js",
+    "dev": "node --watch app.js",
+    "db:init": "node scripts/db-init.js"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",
+    "bootstrap": "^5.3.3",
+    "compression": "^1.8.2",
     "connect-flash": "^0.1.1",
-    "cookie-parser": "~1.4.4",
-    "debug": "~2.6.9",
     "dotenv": "^17.2.3",
-    "express": "~4.16.1",
-    "express-handlebars": "^8.0.3",
+    "express": "^4.22.3",
+    "express-handlebars": "^9.0.6",
+    "express-mysql-session": "^3.0.3",
     "express-session": "^1.18.2",
-    "hbs": "~4.0.4",
-    "http-errors": "~1.6.3",
-    "morgan": "~1.9.1",
-    "mysql2": "^3.15.3",
-    "openai": "^6.9.1"
+    "mysql2": "^3.24.6"
+  },
+  "description": "Eros Wear: catálogo, probador de outfits y comunidad de estilo",
+  "engines": {
+    "node": ">=18"
+  },
+  "overrides": {
+    "express-mysql-session": {
+      "mysql2": "$mysql2"
+    }
   }
 }

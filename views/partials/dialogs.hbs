@@ -1,0 +1,22 @@
+{{!-- Diálogo reutilizable de confirmación / captura de texto (ver ErosUI en main.js) --}}
+<div class="modal fade modal-eros" id="erosDialog" tabindex="-1" aria-labelledby="erosDialogTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <form class="modal-content" id="erosDialogForm" novalidate>
+            <div class="modal-header">
+                <h5 class="modal-title" id="erosDialogTitle">Confirmar</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-0" id="erosDialogMessage"></p>
+                <div class="field mt-3 mb-0 d-none" id="erosDialogField">
+                    <label for="erosDialogInput" id="erosDialogLabel">Nombre</label>
+                    <input type="text" class="form-control" id="erosDialogInput" maxlength="100" autocomplete="off">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-ghost btn-sm-eros" data-bs-dismiss="modal" id="erosDialogCancel">Cancelar</button>
+                <button type="submit" class="btn-eros btn-sm-eros" id="erosDialogOk">Aceptar</button>
+            </div>
+        </form>
+    </div>
+</div>

@@ -1,463 +1,308 @@
-// public/js/outfit-builder.js
-
+// public/js/outfit-builder.js · Probador de outfits
 document.addEventListener('DOMContentLoaded', () => {
     const canvas = document.getElementById('outfit-canvas');
-    const garments = document.querySelectorAll('.garment-item');
-    const saveOutfitBtn = document.getElementById('saveOutfit');
-    const clearCanvasBtn = document.getElementById('clearCanvas');
+    if (!canvas) return;
 
-    const chatForm = document.getElementById('chat-form');
-    const chatMessages = document.getElementById('chat-messages');
-    const userInput = document.getElementById('user-input');
-    const sendBtn = document.getElementById('send-btn');
-    const modal = document.getElementById('styleAdvisorModal');
+    const studio = document.getElementById('studio');
+    const currentUserId = Number(studio.dataset.userId);
+    const nameInput = document.getElementById('outfitName');
+    const modeBadge = document.getElementById('modeBadge');
+    const saveBtn = document.getElementById('saveOutfit');
+    const saveLabel = document.getElementById('saveLabel');
+    const removeBtn = document.getElementById('removeItem');
+    const frontBtn = document.getElementById('bringFront');
+    const ITEM_W = window.EROS_ITEM_WIDTH || 130;
 
-
-    // **VARIABLES DE ESTADO GLOBAL PARA UPDATE**
     let currentOutfitId = null;
-    let currentOutfitName = 'Nuevo Outfit'; // Para mostrar en el prompt
+    let selected = null;
+    let dirty = false;
 
+    // ------------------------------------------------------------------
+    // Estado del lienzo
+    // ------------------------------------------------------------------
+    function refreshState() {
+        const hasItems = canvas.querySelector('.outfit-item') !== null;
+        canvas.classList.toggle('has-items', hasItems);
+        removeBtn.disabled = !selected;
+        frontBtn.disabled = !selected;
+    }
 
+    function setMode(outfitId) {
+        currentOutfitId = outfitId;
+        modeBadge.classList.toggle('d-none', !outfitId);
+        saveLabel.textContent = outfitId ? 'Guardar cambios' : 'Guardar outfit';
+    }
 
-    if (!canvas) return; // Aseguramos que solo se ejecute en la página con el canvas
+    function select(el) {
+        if (selected) selected.classList.remove('selected');
+        selected = el;
+        if (el) el.classList.add('selected');
+        refreshState();
+    }
 
-    // ----------------------------------------------------
-    // A. LÓGICA DRAG (Emisor)
-    // ----------------------------------------------------
-    let draggedGarmentData = {};
-
-    garments.forEach(garment => {
-        garment.addEventListener('dragstart', (e) => {
-            // Guardar los datos de la prenda que se está arrastrando
-            draggedGarmentData = {
-                id: garment.dataset.id,
-                name: garment.dataset.name,
-                src: garment.querySelector('img').src
-            };
-
-            // Usar setDragImage para que la imagen arrastrada sea más representativa
-            const dragImage = document.createElement('img');
-            dragImage.src = draggedGarmentData.src;
-            dragImage.style.width = '100px';
-            dragImage.style.opacity = '0.5';
-            document.body.appendChild(dragImage);
-
-            e.dataTransfer.setDragImage(dragImage, 50, 50);
-
-            // Limpieza: Remover la imagen temporal después de un corto tiempo
-            setTimeout(() => document.body.removeChild(dragImage), 0);
-        });
-    });
-
-
-    // ----------------------------------------------------
-    // B. LÓGICA DROP (Receptor)
-    // ----------------------------------------------------
-
-    // 1. Prevenir el comportamiento por defecto (necesario para que 'drop' funcione)
-    canvas.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        canvas.style.backgroundColor = '#f0f8ff'; // Efecto visual al pasar por encima
-    });
-
-    canvas.addEventListener('dragleave', (e) => {
-        canvas.style.backgroundColor = 'white';
-    });
-
-    // 2. Manejar el evento DROP (soltar)
-    canvas.addEventListener('drop', (e) => {
-        e.preventDefault();
-        canvas.style.backgroundColor = 'white';
-
-        if (Object.keys(draggedGarmentData).length === 0) return; // Evitar drops vacíos
-
-        // Calcular la posición relativa dentro del canvas
-        const rect = canvas.getBoundingClientRect();
-        const x = e.clientX - rect.left; // Coordenada X relativa al canvas
-        const y = e.clientY - rect.top;  // Coordenada Y relativa al canvas
-
-        // Crear la imagen en el canvas
+    function addItem({ id, name, src, x, y }) {
         const img = document.createElement('img');
-        img.src = draggedGarmentData.src;
-        img.alt = draggedGarmentData.name;
-
-        // Estilos y propiedades para el D&D:
-        img.classList.add('outfit-item');
-        img.style.position = 'absolute';
-        img.style.left = `${x - 50}px`; // Centrar la imagen en la posición del cursor
-        img.style.top = `${y - 50}px`;
-        img.style.width = '100px'; // Tamaño visible
-        img.style.cursor = 'move';
-        img.dataset.garmentId = draggedGarmentData.id; // Guardar el ID para guardar en BD
-
-        // IMPLEMENTACIÓN DE DRAG DEL ELEMENTO DENTRO DEL CANVAS
-        makeElementDraggable(img);
-
+        img.src = src;
+        img.alt = name || '';
+        img.className = 'outfit-item';
+        img.draggable = false;
+        img.tabIndex = 0;
+        img.dataset.garmentId = id;
+        img.style.width = `${ITEM_W}px`;
+        img.style.left = `${x}px`;
+        img.style.top = `${y}px`;
+        makeMovable(img);
         canvas.appendChild(img);
-        draggedGarmentData = {}; // Resetear los datos
-    });
-
-    // ----------------------------------------------------
-    // C. Re-arrastrar elementos en el Canvas (D&D Secundario)
-    // ----------------------------------------------------
-
-    // Función para hacer que los elementos dentro del canvas se puedan mover
-    function makeElementDraggable(element) {
-        let isDragging = false;
-        let offset = { x: 0, y: 0 }; // Distancia del cursor al borde de la imagen
-
-        element.addEventListener('mousedown', (e) => {
-            if (e.button !== 0) return; // Solo clic izquierdo
-            isDragging = true;
-            offset.x = e.clientX - element.getBoundingClientRect().left;
-            offset.y = e.clientY - element.getBoundingClientRect().top;
-            element.style.cursor = 'grabbing';
-        });
-
-        document.addEventListener('mousemove', (e) => {
-            if (!isDragging) return;
-
-            // Nueva posición relativa al canvas
-            let newX = e.clientX - canvas.getBoundingClientRect().left - offset.x;
-            let newY = e.clientY - canvas.getBoundingClientRect().top - offset.y;
-
-            // Opcional: Limitar el movimiento para que no salga del canvas
-            // if (newX < 0) newX = 0;
-            // if (newY < 0) newY = 0;
-
-            element.style.left = `${newX}px`;
-            element.style.top = `${newY}px`;
-        });
-
-        document.addEventListener('mouseup', () => {
-            if (isDragging) {
-                isDragging = false;
-                element.style.cursor = 'move';
-            }
-        });
-
-        // Req 5: Evento de ratón (Clic derecho para borrar)
-        element.addEventListener('contextmenu', (e) => {
-            e.preventDefault(); // Evita que aparezca el menú contextual del navegador
-            if (confirm(`¿Eliminar ${element.alt} del outfit?`)) {
-                element.remove();
-            }
-        });
+        dirty = true;
+        refreshState();
+        return img;
     }
 
-
-    // ----------------------------------------------------
-    // D. Funciones de Control
-    // ----------------------------------------------------
-
-    // Limpiar canvas
-    document.getElementById('clearCanvas').addEventListener('click', () => {
-        if (confirm('¿Estás seguro de que quieres limpiar el outfit?')) {
-            canvas.querySelectorAll('.outfit-item').forEach(item => item.remove());
-        }
-    });
-
-    // Función para recolectar datos del canvas
-    function collectOutfitData() {
-        const outfitItems = [];
-        const itemsOnCanvas = canvas.querySelectorAll('.outfit-item');
-
-        itemsOnCanvas.forEach(item => {
-            // Asegúrate de que las coordenadas sean números
-            const x = parseFloat(item.style.left);
-            const y = parseFloat(item.style.top);
-
-            outfitItems.push({
-                garmentId: parseInt(item.dataset.garmentId),
-                x: x,
-                y: y
-            });
+    function addAtCenter(tile) {
+        const rect = canvas.getBoundingClientRect();
+        const count = canvas.querySelectorAll('.outfit-item').length;
+        const el = addItem({
+            id: tile.dataset.id,
+            name: tile.dataset.name,
+            src: tile.dataset.src,
+            x: rect.width / 2 - ITEM_W / 2 + (count % 4) * 14,
+            y: 40 + (count % 6) * 40
         });
-
-        return outfitItems;
+        select(el);
     }
 
-
-// Req 5: Eventos de Teclado (2)
-
-    document.addEventListener('keydown', (e) => {
-        // 1. Usar ESC para cerrar la modal de confirmación
-        if (e.key === 'Escape' && document.querySelector('.modal.show')) {
-            // Simular clic en el botón de cerrar de Bootstrap (si usas modales de Bootstrap)
-            // Por ahora, solo loguearemos:
-            console.log('Evento de teclado: ESC presionado.');
-        }
-
-        // 2. Usar teclas de flecha para mover la prenda seleccionada (focus)
-        const activeItem = document.activeElement;
-        if (activeItem && activeItem.classList.contains('outfit-item')) {
-            let x = parseFloat(activeItem.style.left);
-            let y = parseFloat(activeItem.style.top);
-            const step = 5; // Pixeles de movimiento
-
-            switch (e.key) {
-                case 'ArrowUp': y -= step; e.preventDefault(); break;
-                case 'ArrowDown': y += step; e.preventDefault(); break;
-                case 'ArrowLeft': x -= step; e.preventDefault(); break;
-                case 'ArrowRight': x += step; e.preventDefault(); break;
-                default: return;
-            }
-
-            activeItem.style.left = `${x}px`;
-            activeItem.style.top = `${y}px`;
-        }
-    });
-
-
-// public/js/outfit-builder.js (AGREGAR AL FINAL)
-
-// Req 5: Evento de Animación (1)
-    function showSuccessAnimation(message) {
-        const popup = document.createElement('div');
-        popup.classList.add('success-popup');
-        popup.textContent = message;
-
-        // Agregarlo al body
-        document.body.appendChild(popup);
-
-        // Escuchar el evento de fin de animación
-        popup.addEventListener('animationend', (e) => {
-            // Eliminar el elemento del DOM al finalizar (limpieza)
-            if (e.animationName === 'fadeOut') {
-                popup.remove();
-                console.log('Evento de animación: popup eliminado del DOM.');
-            }
+    // ------------------------------------------------------------------
+    // Catálogo → lienzo (arrastrar en escritorio, tocar en cualquier lado)
+    // ------------------------------------------------------------------
+    let dragged = null;
+    document.querySelectorAll('.garment-tile').forEach(tile => {
+        tile.addEventListener('dragstart', e => {
+            dragged = tile;
+            e.dataTransfer.effectAllowed = 'copy';
+            e.dataTransfer.setData('text/plain', tile.dataset.id);
+            const ghost = tile.querySelector('img');
+            if (ghost) e.dataTransfer.setDragImage(ghost, ghost.width / 2, ghost.height / 2);
         });
-    }
-
-    // ----------------------------------------------------
-    // LÓGICA DE CARGA Y GUARDADO (Update)
-    // ----------------------------------------------------
-
-    // Función para limpiar el Canvas y resetear el estado de edición
-    const clearCanvas = () => {
-        canvas.querySelectorAll('.outfit-item').forEach(item => item.remove());
-        currentOutfitId = null;
-        currentOutfitName = 'Nuevo Outfit';
-        console.log("Canvas limpiado. Modo: Guardar nuevo.");
-    };
-
-    // 1. Guardar Outfit (MODIFICAR para manejar POST/PUT)
-    saveOutfitBtn.addEventListener('click', async () => {
-        const items = collectOutfitData();
-        if (items.length === 0) { alert('El canvas está vacío.'); return; }
-
-        let outfitName = prompt(`Ingresa un nombre para tu outfit (Actual: ${currentOutfitName}):`, currentOutfitName);
-        if (!outfitName || outfitName.trim() === '') return;
-
-        let url = '/outfits';
-        let method = 'POST';
-
-        // Si hay un ID, cambiamos a modo UPDATE (PUT)
-        if (currentOutfitId) {
-            url = `/outfits/${currentOutfitId}`;
-            method = 'PUT';
-        }
-
-        try {
-            const response = await fetch(url, {
-                method: method,
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    outfitName: outfitName.trim(),
-                    items: items
-                })
-            });
-            // ... (manejo de respuesta y animación de éxito) ...
-            const result = await response.json();
-
-            if (result.success) {
-                showSuccessAnimation(currentOutfitId ? 'Outfit Actualizado!' : 'Outfit Guardado!');
-                // Si fue POST, guardamos el ID para futuras ediciones
-                if (method === 'POST') currentOutfitId = result.outfitId;
-                currentOutfitName = outfitName.trim();
-
-            } else {
-                alert(`Error al ${method === 'POST' ? 'guardar' : 'actualizar'}: ` + result.message);
-            }
-        } catch (error) {
-            console.error('Error de red:', error);
-            alert('Error de conexión.');
-        }
-    });
-
-    // 2. Cargar Outfit para Edición (NUEVA LÓGICA)
-    const editButtons = document.querySelectorAll('.edit-outfit-btn');
-    editButtons.forEach(btn => {
-        btn.addEventListener('click', async (e) => {
-            const id = e.currentTarget.dataset.outfitId;
-
-            if (currentOutfitId && currentOutfitId != id) {
-                if (!confirm(`Ya estás editando el outfit ID ${currentOutfitId}. ¿Deseas descartar los cambios y cargar el nuevo?`)) {
-                    return;
-                }
-            }
-
-            try {
-                const response = await fetch(`/outfits/${id}`);
-                const data = await response.json();
-
-                if (data.success) {
-                    clearCanvas(); // Limpiar el canvas actual
-                    loadOutfitToCanvas(id, data.name, data.items);
-                    alert(`Outfit "${data.name}" cargado para edición.`);
-                } else {
-                    alert('Error al cargar el outfit: ' + data.message);
-                }
-            } catch (error) {
-                alert('Error de red al cargar el outfit.');
-            }
+        tile.addEventListener('dragend', () => { dragged = null; canvas.classList.remove('drag-over'); });
+        tile.addEventListener('click', () => addAtCenter(tile));
+        tile.addEventListener('keydown', e => {
+            if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); addAtCenter(tile); }
         });
     });
 
-    // 3. Función para dibujar el outfit cargado
-    function loadOutfitToCanvas(id, name, items) {
-        currentOutfitId = id;
-        currentOutfitName = name;
-
-        items.forEach(item => {
-            // ... (código para crear y posicionar img, y hacerla draggable) ...
-            const img = document.createElement('img');
-            img.src = item.imageUrl;
-            img.alt = `Prenda ID ${item.garmentId}`;
-
-            // Replicar las propiedades del D&D:
-            img.classList.add('outfit-item');
-            img.style.position = 'absolute';
-            img.style.left = `${item.x}px`;
-            img.style.top = `${item.y}px`;
-            img.style.width = '100px';
-            img.style.cursor = 'move';
-            img.dataset.garmentId = item.garmentId;
-            makeElementDraggable(img);
-
-            canvas.appendChild(img);
+    canvas.addEventListener('dragover', e => {
+        if (!dragged) return;
+        e.preventDefault();
+        canvas.classList.add('drag-over');
+    });
+    canvas.addEventListener('dragleave', () => canvas.classList.remove('drag-over'));
+    canvas.addEventListener('drop', e => {
+        e.preventDefault();
+        canvas.classList.remove('drag-over');
+        if (!dragged) return;
+        const rect = canvas.getBoundingClientRect();
+        const img = dragged.querySelector('img');
+        const ratio = img && img.naturalWidth ? img.naturalHeight / img.naturalWidth : 1;
+        const el = addItem({
+            id: dragged.dataset.id,
+            name: dragged.dataset.name,
+            src: dragged.dataset.src,
+            x: e.clientX - rect.left - ITEM_W / 2,
+            y: e.clientY - rect.top - (ITEM_W * ratio) / 2
         });
-    }
+        select(el);
+        dragged = null;
+    });
 
-    // 4. Limpiar canvas (USAR LA FUNCIÓN GLOBAL)
-    document.getElementById('clearCanvas').addEventListener('click', clearCanvas);
+    // ------------------------------------------------------------------
+    // Mover prendas dentro del lienzo (ratón y táctil)
+    // ------------------------------------------------------------------
+    function makeMovable(el) {
+        let start = null;
 
-
-    // ----------------------------------------------------
-// E. LÓGICA DE INICIALIZACIÓN DE EDICIÓN (Al cargar la página)
-// ----------------------------------------------------
-
-    function initializeEditMode() {
-        // 1. Obtener parámetros de la URL
-        const urlParams = new URLSearchParams(window.location.search);
-        const editId = urlParams.get('edit');
-
-        if (editId) {
-            console.log(`Modo Edición Activado para Outfit ID: ${editId}`);
-            fetchOutfitAndLoad(editId);
-        }
-    }
-
-    async function fetchOutfitAndLoad(id) {
-        try {
-            const response = await fetch(`/outfits/${id}`);
-
-            if (!response.ok) {
-                alert('Error al cargar outfit: No se encontró el outfit o error del servidor.');
-                return;
-            }
-
-            const data = await response.json();
-
-            if (data.success) {
-                clearCanvas(); // Limpiar antes de cargar el nuevo
-                loadOutfitToCanvas(id, data.name, data.items);
-                alert(`Outfit "${data.name}" cargado para edición.`);
-
-                // Opcional: Limpiar el query string para que al recargar no se cargue dos veces
-                history.replaceState(null, '', location.pathname);
-
-            } else {
-                alert('Error al cargar el outfit: ' + data.message);
-            }
-        } catch (error) {
-            console.error('Error de red al cargar el outfit:', error);
-            alert('Error de conexión al cargar el outfit.');
-        }
-    }
-    initializeEditMode();
-
-
-    // Función para añadir mensajes al contenedor de chat
-    function addMessage(sender, text, isAI = false) {
-        const messageDiv = document.createElement('div');
-        messageDiv.classList.add('p-2', 'mb-2', 'small');
-        messageDiv.style.borderRadius = '10px';
-
-        if (isAI) {
-            messageDiv.classList.add('alert', 'alert-info');
-            messageDiv.innerHTML = `<strong>Eros Bot:</strong> ${text}`;
-        } else {
-            messageDiv.classList.add('text-end');
-            messageDiv.style.backgroundColor = '#EAEAEA';
-            messageDiv.innerHTML = `<strong>Tú:</strong> ${text}`;
-        }
-
-        chatMessages.appendChild(messageDiv);
-        chatMessages.scrollTop = chatMessages.scrollHeight; // Scroll al final
-    }
-
-    // Manejar el envío del formulario del chat
-    if (chatForm) {
-        chatForm.addEventListener('submit', async (e) => {
+        el.addEventListener('pointerdown', e => {
+            if (e.button !== 0) return;
             e.preventDefault();
-            const message = userInput.value.trim();
+            select(el);
+            el.focus({ preventScroll: true });
+            el.setPointerCapture(e.pointerId);
+            start = {
+                px: e.clientX,
+                py: e.clientY,
+                x: parseFloat(el.style.left),
+                y: parseFloat(el.style.top)
+            };
+            el.classList.add('dragging');
+        });
 
-            if (!message) return;
+        el.addEventListener('pointermove', e => {
+            if (!start) return;
+            const maxX = canvas.clientWidth - 30;
+            const maxY = canvas.clientHeight - 30;
+            const x = Math.min(maxX, Math.max(30 - el.offsetWidth, start.x + e.clientX - start.px));
+            const y = Math.min(maxY, Math.max(30 - el.offsetHeight, start.y + e.clientY - start.py));
+            el.style.left = `${x}px`;
+            el.style.top = `${y}px`;
+            dirty = true;
+        });
 
-            addMessage('user', message, false);
-            userInput.value = '';
+        const end = () => {
+            start = null;
+            el.classList.remove('dragging');
+        };
+        el.addEventListener('pointerup', end);
+        el.addEventListener('pointercancel', end);
 
-            // Mostrar indicador de carga
-            sendBtn.disabled = true;
-            sendBtn.textContent = '...';
-
-            try {
-                const response = await fetch('/api/style-advice', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ message: message })
-                });
-
-                const result = await response.json();
-
-                if (result.success) {
-                    addMessage('ai', result.advice, true);
-                } else {
-                    addMessage('ai', `[ERROR]: ${result.message}`, true);
-                }
-
-            } catch (error) {
-                console.error('Fallo en la comunicación con el AI:', error);
-                addMessage('ai', 'Fallo de conexión con el servidor. Por favor, verifica tu red.', true);
-            } finally {
-                sendBtn.disabled = false;
-                sendBtn.textContent = 'Enviar';
-            }
+        el.addEventListener('contextmenu', e => {
+            e.preventDefault();
+            removeItem(el);
         });
     }
 
-    // Limpiar el chat al cerrar el modal (opcional)
-    if (modal) {
-        modal.addEventListener('hidden.bs.modal', function () {
-            // Limpiar todo excepto el mensaje inicial de bienvenida
-            const welcomeMessage = chatMessages.querySelector('.alert-info');
-            chatMessages.innerHTML = '';
-            chatMessages.appendChild(welcomeMessage.cloneNode(true));
-        });
+    function removeItem(el) {
+        if (!el) return;
+        if (selected === el) selected = null;
+        el.remove();
+        dirty = true;
+        refreshState();
     }
 
+    canvas.addEventListener('pointerdown', e => {
+        if (e.target === canvas) select(null);
+    });
+
+    // Teclado: flechas para afinar, Supr/Retroceso para quitar
+    document.addEventListener('keydown', e => {
+        if (!selected || document.activeElement === nameInput) return;
+        if (document.querySelector('.modal.show')) return;
+        const step = e.shiftKey ? 20 : 4;
+        let x = parseFloat(selected.style.left);
+        let y = parseFloat(selected.style.top);
+        switch (e.key) {
+            case 'ArrowUp': y -= step; break;
+            case 'ArrowDown': y += step; break;
+            case 'ArrowLeft': x -= step; break;
+            case 'ArrowRight': x += step; break;
+            case 'Delete':
+            case 'Backspace':
+                e.preventDefault();
+                removeItem(selected);
+                return;
+            case 'Escape':
+                select(null);
+                return;
+            default:
+                return;
+        }
+        e.preventDefault();
+        selected.style.left = `${x}px`;
+        selected.style.top = `${y}px`;
+        dirty = true;
+    });
+
+    removeBtn.addEventListener('click', () => removeItem(selected));
+    frontBtn.addEventListener('click', () => {
+        if (!selected) return;
+        canvas.appendChild(selected);
+        selected.focus({ preventScroll: true });
+        dirty = true;
+    });
+
+    document.getElementById('clearCanvas').addEventListener('click', async () => {
+        if (!canvas.querySelector('.outfit-item')) {
+            setMode(null);
+            nameInput.value = '';
+            return;
+        }
+        const ok = await ErosUI.confirm('Se quitarán todas las prendas del lienzo y empezarás un outfit nuevo.', {
+            title: '¿Empezar de cero?', okText: 'Limpiar', danger: true
+        });
+        if (!ok) return;
+        canvas.querySelectorAll('.outfit-item').forEach(el => el.remove());
+        selected = null;
+        setMode(null);
+        nameInput.value = '';
+        dirty = false;
+        refreshState();
+    });
+
+    // ------------------------------------------------------------------
+    // Guardar (crear o actualizar)
+    // ------------------------------------------------------------------
+    function collectItems() {
+        return Array.from(canvas.querySelectorAll('.outfit-item')).map(el => ({
+            garmentId: parseInt(el.dataset.garmentId, 10),
+            x: parseFloat(el.style.left),
+            y: parseFloat(el.style.top)
+        }));
+    }
+
+    saveBtn.addEventListener('click', async () => {
+        const items = collectItems();
+        if (!items.length) {
+            ErosUI.toast('Agrega al menos una prenda al lienzo.', 'error');
+            return;
+        }
+
+        let name = nameInput.value.trim();
+        if (!name) {
+            name = await ErosUI.prompt('Nombra tu outfit', {
+                label: 'Nombre', placeholder: 'Ej. Noche Amatista', okText: 'Guardar'
+            });
+            if (!name) return;
+            nameInput.value = name;
+        }
+
+        saveBtn.disabled = true;
+        try {
+            const data = await ErosUI.request(currentOutfitId ? `/outfits/${currentOutfitId}` : '/outfits', {
+                method: currentOutfitId ? 'PUT' : 'POST',
+                body: { outfitName: name, items }
+            });
+            const wasNew = !currentOutfitId;
+            setMode(data.outfitId || currentOutfitId);
+            dirty = false;
+            ErosUI.toast(wasNew ? `“${name}” ya está en la galería.` : `“${name}” se actualizó.`, 'success');
+        } catch (err) {
+            if (err.message !== 'unauthorized') ErosUI.toast(err.message, 'error');
+        } finally {
+            saveBtn.disabled = false;
+        }
+    });
+
+    window.addEventListener('beforeunload', e => {
+        if (dirty && canvas.querySelector('.outfit-item')) {
+            e.preventDefault();
+            e.returnValue = '';
+        }
+    });
+
+    // ------------------------------------------------------------------
+    // Cargar outfit para edición (?edit=ID)
+    // ------------------------------------------------------------------
+    async function loadForEdit(id) {
+        try {
+            const res = await fetch(`/outfits/${encodeURIComponent(id)}`, { headers: { Accept: 'application/json' } });
+            const data = await res.json();
+            if (!res.ok || !data.success) throw new Error(data.message || 'No encontramos ese outfit.');
+
+            const isOwner = Number(data.userId) === currentUserId;
+            data.items.forEach(item => addItem({
+                id: item.garmentId, name: item.name, src: item.imageUrl, x: item.x, y: item.y
+            }));
+            nameInput.value = isOwner ? data.name : `${data.name} (versión)`;
+            setMode(isOwner ? Number(id) : null);
+            dirty = false;
+            ErosUI.toast(isOwner ? `Editando “${data.name}”.` : 'Cargamos una copia; se guardará como un outfit nuevo.', 'info', 3000);
+        } catch (err) {
+            ErosUI.toast(err.message, 'error');
+        } finally {
+            history.replaceState(null, '', location.pathname);
+        }
+    }
+
+    const editId = new URLSearchParams(location.search).get('edit');
+    if (editId) loadForEdit(editId);
+
+    refreshState();
 });
-
-
