@@ -11,6 +11,7 @@ const compression = require('compression');
 
 const db = require('./database/db');
 const helpers = require('./lib/hbs-helpers');
+const store = require('./lib/store');
 
 const app = express();
 const isProd = process.env.NODE_ENV === 'production';
@@ -72,6 +73,8 @@ app.use((req, res, next) => {
     res.locals.user = req.session.user;
     res.locals.currentPath = req.path;
     res.locals.year = new Date().getFullYear();
+    res.locals.whatsappEnabled = Boolean(store.getWhatsappNumber());
+    res.locals.whatsappUrl = store.getWhatsappNumber() ? `https://wa.me/${store.getWhatsappNumber()}` : null;
     next();
 });
 

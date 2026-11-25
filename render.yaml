@@ -16,6 +16,8 @@ services:
         value: "true"
       - key: DB_PORT
         value: "4000"
+      - key: WHATSAPP_NUMBER
+        sync: false
       - key: DB_HOST
         sync: false
       - key: DB_USER

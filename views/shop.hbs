@@ -3,7 +3,7 @@
     <div class="container position-relative" style="z-index: 2;">
         <span class="eyebrow">Catálogo oficial</span>
         <h1>La <span class="outline">colección</span></h1>
-        <p>Piezas que mezclan la sastrería clásica con la actitud de la calle. Agrega tus favoritas al probador y empieza a combinar.</p>
+        <p>Piezas que mezclan la sastrería clásica con la actitud de la calle. Elige talla, arma tu carrito y envíanos tu pedido por WhatsApp.</p>
     </div>
 </section>
 
@@ -26,6 +26,8 @@
                 </label>
                 <select name="sort_by" class="select-eros" aria-label="Ordenar" onchange="this.form.submit()">
                     <option value="default" {{#if (eq currentSort 'default')}}selected{{/if}}>Nombre (A-Z)</option>
+                    <option value="price_asc" {{#if (eq currentSort 'price_asc')}}selected{{/if}}>Precio: menor a mayor</option>
+                    <option value="price_desc" {{#if (eq currentSort 'price_desc')}}selected{{/if}}>Precio: mayor a menor</option>
                     <option value="likes" {{#if (eq currentSort 'likes')}}selected{{/if}}>Más favoritas</option>
                     <option value="usage" {{#if (eq currentSort 'usage')}}selected{{/if}}>Más usadas en outfits</option>
                 </select>
@@ -39,50 +41,27 @@
         <p class="result-count">
             <strong>{{resultCount}}</strong> {{#if (eq resultCount 1)}}prenda{{else}}prendas{{/if}}
             {{#if q}}para “{{q}}”{{/if}}
-            {{#unless user}} · <a href="/login">Inicia sesión</a> para armar tu probador{{/unless}}
+            {{#unless user}} · <a href="/login">Inicia sesión</a> para usar el probador{{/unless}}
         </p>
 
         {{#if garments}}
             <div class="row g-3 g-md-4">
                 {{#each garments}}
                     <div class="col-6 col-md-4 col-xl-3">
-                        <article class="product-card">
-                            <span class="product-tag">{{categoryLabel category}}</span>
-                            <button type="button" class="product-media js-zoom"
-                                    data-name="{{name}}" data-img="{{image_url}}" data-category="{{categoryLabel category}}"
-                                    data-favs="{{total_favorites}}" data-usage="{{total_usage}}"
-                                    aria-label="Ver {{name}} en grande">
-                                <img src="{{image_url}}" alt="{{name}}" loading="lazy">
-                            </button>
-                            <div class="product-body">
-                                <h3 class="product-name">{{name}}</h3>
-                                <div class="product-meta">
-                                    <span title="Usuarios que la tienen en su probador">{{{icon 'heart'}}} {{total_favorites}}</span>
-                                    <span title="Veces usada en outfits">{{{icon 'layers'}}} {{total_usage}}</span>
-                                </div>
-                                {{#if ../user}}
-                                    <button type="button"
-                                            class="fav-btn {{#if is_favorite}}is-active{{/if}}"
-                                            data-garment-id="{{id}}"
-                                            data-is-favorite="{{is_favorite}}"
-                                            aria-pressed="{{#if is_favorite}}true{{else}}false{{/if}}">
-                                        <span class="fav-icon">{{#if is_favorite}}{{{icon 'check'}}}{{else}}{{{icon 'plus'}}}{{/if}}</span>
-                                        <span class="fav-label">{{#if is_favorite}}En tu probador{{else}}Al probador{{/if}}</span>
-                                    </button>
-                                {{else}}
-                                    <p class="login-hint"><a href="/login">Entra</a> para agregarla</p>
-                                {{/if}}
-                            </div>
-                        </article>
+                        <div class="position-relative h-100">
+                            {{> productCard this}}
+                            {{#if ../user}}
+                                <button type="button" class="fav-icon-btn {{#if is_favorite}}is-active{{/if}}" data-garment-id="{{id}}" data-is-favorite="{{is_favorite}}"
+                                        style="position:absolute; right: .8rem; top: .8rem; z-index: 5; background: rgba(255,255,255,.9);"
+                                        title="{{#if is_favorite}}Quitar de mi probador{{else}}Agregar a mi probador{{/if}}"
+                                        aria-label="{{#if is_favorite}}Quitar de mi probador{{else}}Agregar a mi probador{{/if}}" aria-pressed="{{#if is_favorite}}true{{else}}false{{/if}}">
+                                    {{{icon 'hanger'}}}
+                                </button>
+                            {{/if}}
+                        </div>
                     </div>
                 {{/each}}
             </div>
-
-            {{#if user}}
-                <div class="text-center mt-5">
-                    <a href="/tester" class="btn-eros">Ir a mi probador {{{icon 'arrow'}}}</a>
-                </div>
-            {{/if}}
         {{else}}
             <div class="empty-state">
                 <div class="empty-icon">{{{icon 'search'}}}</div>
@@ -94,29 +73,4 @@
     </div>
 </section>
 
-{{!-- Vista ampliada de la prenda --}}
-<div class="modal fade modal-eros modal-zoom" id="garmentModal" tabindex="-1" aria-labelledby="modalGarmentName" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-lg">
-        <div class="modal-content position-relative">
-            <button type="button" class="btn-close-x" data-bs-dismiss="modal" aria-label="Cerrar">&times;</button>
-            <div class="modal-body">
-                <div class="zoom-media"><img id="modalGarmentImage" src="" alt=""></div>
-                <div class="zoom-info">
-                    <span class="eyebrow" id="modalGarmentCategory"></span>
-                    <h3 id="modalGarmentName"></h3>
-                    <p class="mb-0" id="modalGarmentStats"></p>
-                    <p>Combínala con otras piezas en el probador y compártela con la comunidad.</p>
-                    <div class="mt-auto d-flex flex-wrap gap-2">
-                        {{#if user}}
-                            <a href="/tester" class="btn-rose">Abrir probador</a>
-                        {{else}}
-                            <a href="/login" class="btn-rose">Inicia sesión</a>
-                        {{/if}}
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<script src="/js/shop.js?v=2"></script>
+<script src="/js/shop.js?v=3"></script>

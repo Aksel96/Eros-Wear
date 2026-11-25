@@ -86,7 +86,7 @@ outfitController.getOutfitById = async (req, res) => {
         const [rows] = await db.query(`
             SELECT o.name AS outfit_name, o.user_id,
                    oi.position_x, oi.position_y,
-                   g.id AS garment_id, g.name AS garment_name, g.image_url AS garment_image_url
+                   g.id AS garment_id, g.name AS garment_name, g.image_url AS garment_image_url, g.price AS garment_price
             FROM outfits o
             JOIN outfit_items oi ON oi.outfit_id = o.id
             JOIN garments g      ON g.id = oi.garment_id
@@ -106,6 +106,7 @@ outfitController.getOutfitById = async (req, res) => {
                 garmentId: r.garment_id,
                 name: r.garment_name,
                 imageUrl: r.garment_image_url,
+                price: Number(r.garment_price),
                 x: Number(r.position_x),
                 y: Number(r.position_y)
             }))
@@ -132,7 +133,7 @@ outfitController.renderGallery = async (req, res) => {
                 u.nickname AS creator_nickname, u.id AS creator_id,
                 (SELECT COUNT(*) FROM likes l WHERE l.outfit_id = o.id AND l.user_id = ?) AS user_liked,
                 oi.position_x, oi.position_y,
-                g.name AS garment_name, g.image_url AS garment_image_url
+                g.id AS garment_id, g.name AS garment_name, g.image_url AS garment_image_url
             FROM outfits o
             JOIN users u         ON u.id = o.user_id
             JOIN outfit_items oi ON oi.outfit_id = o.id

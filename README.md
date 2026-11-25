@@ -1,8 +1,10 @@
 # Eros Wear
 
-Elegancia audaz con corazón mexicano. Eros Wear es una tienda-estudio de moda donde puedes explorar el catálogo, combinar prendas en un probador visual y compartir tus outfits con la comunidad.
+Elegancia audaz con corazón mexicano. Eros Wear es un catálogo interactivo de moda: exploras prendas con precio y stock por talla, armas tu carrito y envías el pedido por WhatsApp. **No hay pago en línea**: la marca confirma disponibilidad, cobro y entrega por mensaje.
 
-- **Catálogo** con filtros por categoría, búsqueda y orden por popularidad.
+- **Catálogo y producto** con precios, tallas con stock, filtros, búsqueda y efectos (inclinación 3D, zoom).
+- **Carrito** guardado en el navegador; el servidor revisa precio y stock reales al enviar.
+- **Pedidos por WhatsApp:** se registran en la base (tabla `orders`) y abren WhatsApp con el mensaje ya armado.
 - **Probador**: arrastra o toca prendas para colocarlas en el lienzo, muévelas (ratón o táctil), y guarda o edita tus outfits.
 - **Galería** con likes (uno por persona) y la opción de usar outfits ajenos como inspiración.
 - **Comunidad** con ranking de creadores.
@@ -26,8 +28,8 @@ Las sesiones se guardan en la tabla `sessions` de la misma base; se crea sola al
 
 | Archivo | Contenido |
 | --- | --- |
-| `database/schema.sql` | Tablas `users`, `garments`, `user_favorites`, `outfits`, `outfit_items` y `likes`, con llaves foráneas y borrado en cascada. |
-| `database/seed.sql` | Las 59 prendas del catálogo (imágenes en `public/img/garments`) y la cuenta de la marca **ErosStudio** con 6 outfits de muestra. Esa cuenta no tiene una contraseña utilizable. |
+| `database/schema.sql` | Tablas `users`, `garments` (con precio), `garment_sizes` (stock por talla), `orders`, `order_items`, `user_favorites`, `outfits`, `outfit_items` y `likes`. |
+| `database/seed.sql` | Las 59 prendas del catálogo (imágenes en `public/img/garments`), sus tallas con **precios, descripciones y stock de ejemplo**, y la cuenta de la marca **ErosStudio** con 6 outfits de muestra. Esa cuenta no tiene una contraseña utilizable. |
 
 ### Hosting recomendado: TiDB Cloud Starter (gratis)
 
@@ -49,6 +51,7 @@ La app usa MySQL. TiDB Cloud Starter es compatible con MySQL, tiene un plan grat
    | `DB_SSL` | `true` |
    | `SESSION_SECRET` | una cadena larga y aleatoria |
    | `NODE_ENV` | `production` |
+   | `WHATSAPP_NUMBER` | tu número en formato internacional, solo dígitos (México celular: `521` + 10 dígitos) |
 
    En lugar de las cinco primeras puedes usar solo `DATABASE_URL=mysql://usuario:contraseña@host:4000/eros_wear`.
 
@@ -57,6 +60,27 @@ La app usa MySQL. TiDB Cloud Starter es compatible con MySQL, tiene un plan grat
 En Render, el *Build Command* es `npm install` y el *Start Command* es `npm start`.
 
 **Otras opciones:** Aiven retiró su MySQL gratuito en noviembre de 2026; su plan *Developer* (unos 5 USD al mes) funciona con esta app usando `DB_SSL=true` y su certificado en `DB_SSL_CA`. Cualquier MySQL 8 sirve sin cambios de código.
+
+## Precios, stock y pedidos
+
+Los precios, descripciones y existencias que trae el seed son **de ejemplo**. Para poner los reales, desde el SQL Editor de TiDB (o cualquier cliente MySQL):
+
+```sql
+-- precio y textos de una prenda (los ids están en database/seed.sql)
+UPDATE garments SET price = 1299, description = 'Texto real', material = '100% algodón' WHERE id = 4;
+
+-- stock por talla
+UPDATE garment_sizes SET stock = 6 WHERE garment_id = 4 AND size = 'M';
+
+-- ocultar una prenda del catálogo
+UPDATE garments SET is_active = 0 WHERE id = 4;
+
+-- ver los pedidos recibidos
+SELECT o.reference, o.customer_name, o.total, o.status, o.created_at FROM orders o ORDER BY o.created_at DESC;
+UPDATE orders SET status = 'confirmado' WHERE reference = 'EW-XXXXXX';
+```
+
+El stock **no se descuenta solo**: sirve para limitar lo que se puede pedir y mostrar "últimas piezas". Cuando confirmes un pedido por WhatsApp, ajusta `garment_sizes` a mano. Si `WHATSAPP_NUMBER` no está definido, el pedido igual se registra y el carrito muestra el texto para copiar.
 
 ## Estructura
 

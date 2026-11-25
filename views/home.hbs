@@ -6,7 +6,7 @@
     <div class="container">
         <div class="row align-items-center g-5">
             <div class="col-lg-6">
-                <span class="eyebrow reveal">Colección 2026 · Hecho en México</span>
+                <span class="eyebrow reveal">Catálogo 2026 · Hecho en México</span>
                 <h1 class="hero-title reveal reveal-d1">
                     Viste la
                     <span class="outline">audacia</span>
@@ -71,13 +71,14 @@
         {{#if trending}}
             <div class="rail reveal">
                 {{#each trending}}
-                    <a href="/shop?category={{category}}" class="trend-card">
+                    <a href="/product/{{id}}" class="trend-card">
                         <div class="trend-word" aria-hidden="true">{{name}} {{name}} {{name}} {{name}}</div>
                         <img src="{{image_url}}" alt="{{name}}" loading="lazy">
                         <div class="trend-info">
                             <div>
                                 <small>{{categoryLabel category}}</small>
                                 <h4>{{name}}</h4>
+                                <span class="trend-price">{{money price}}</span>
                             </div>
                             <span class="trend-arrow">{{{icon 'arrow'}}}</span>
                         </div>
@@ -184,6 +185,7 @@
                                     <span class="outfit-creator"><span class="avatar">{{initial creator}}</span>{{creator}}</span>
                                     <span class="like-static">{{{icon 'heart' filled=true}}} {{likesCount}}</span>
                                 </div>
+                                <button type="button" class="btn-rose btn-sm-eros w-100" data-add-look="{{json (lookIds items)}}">{{{icon 'bag'}}} Comprar este look</button>
                             </div>
                         </article>
                     </div>
@@ -209,7 +211,7 @@
 <section class="section">
     <div class="container">
         <div class="text-center mb-5 reveal">
-            <span class="eyebrow">Cómo funciona</span>
+            <span class="eyebrow">El probador</span>
             <h2 class="section-title">Tu estudio de <em>estilo</em></h2>
         </div>
         <div class="row g-4">
@@ -242,6 +244,25 @@
             <a href="{{#if user}}/tester{{else}}/register{{/if}}" class="btn-eros">
                 {{#if user}}Abrir mi probador{{else}}Crear mi cuenta gratis{{/if}} {{{icon 'arrow'}}}
             </a>
+        </div>
+    </div>
+</section>
+
+{{!-- ============================================================= --}}
+{{!-- CÓMO PEDIR                                                    --}}
+{{!-- ============================================================= --}}
+<section class="section section-dark grain" id="como-pedir">
+    <div class="container position-relative" style="z-index: 2;">
+        <div class="mb-5 reveal">
+            <span class="eyebrow">Cómo pedir</span>
+            <h2 class="section-title">Pide en <em>cuatro</em> pasos</h2>
+            <p class="section-lead mt-3">Sin pago en línea: atención personal por WhatsApp.</p>
+        </div>
+        <div class="row g-4 how-grid">
+            <div class="col-md-6 col-lg-3 reveal"><div class="how-card"><h3>Elige</h3><p>Explora el catálogo y revisa tallas y disponibilidad de cada prenda.</p></div></div>
+            <div class="col-md-6 col-lg-3 reveal reveal-d1"><div class="how-card"><h3>Arma tu carrito</h3><p>Agrega varias prendas, ajusta cantidades y mira tu total al instante.</p></div></div>
+            <div class="col-md-6 col-lg-3 reveal reveal-d2"><div class="how-card"><h3>Envía por WhatsApp</h3><p>Con un clic mandamos tu pedido ya armado, con tu referencia.</p></div></div>
+            <div class="col-md-6 col-lg-3 reveal reveal-d3"><div class="how-card"><h3>Coordinamos</h3><p>Confirmamos disponibilidad, forma de pago y entrega contigo.</p></div></div>
         </div>
     </div>
 </section>

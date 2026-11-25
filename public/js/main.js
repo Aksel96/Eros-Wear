@@ -217,6 +217,24 @@
             reveals.forEach(el => el.classList.add('in'));
         }
 
+        // Inclinación 3D con brillo en tarjetas de producto (solo con ratón)
+        if (window.matchMedia('(hover: hover) and (pointer: fine)').matches && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            document.querySelectorAll('[data-tilt]').forEach(el => {
+                el.addEventListener('pointermove', e => {
+                    if (el.classList.contains('zoomed')) return;
+                    const r = el.getBoundingClientRect();
+                    const px = (e.clientX - r.left) / r.width;
+                    const py = (e.clientY - r.top) / r.height;
+                    el.style.setProperty('--ry', `${(px - 0.5) * 12}deg`);
+                    el.style.setProperty('--rx', `${(0.5 - py) * 12}deg`);
+                    el.style.setProperty('--mx', `${px * 100}%`);
+                    el.style.setProperty('--my', `${py * 100}%`);
+                    el.classList.add('is-tilting');
+                });
+                el.addEventListener('pointerleave', () => el.classList.remove('is-tilting'));
+            });
+        }
+
         // Vistas previas de outfits
         document.querySelectorAll('.outfit-render[data-outfit-items]').forEach(renderOutfit);
 

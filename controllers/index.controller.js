@@ -16,7 +16,7 @@ indexController.renderHome = async (req, res, next) => {
                 o.id AS outfit_id, o.name AS outfit_name, o.likes_count, o.created_at,
                 u.id AS creator_id, u.nickname AS creator_nickname,
                 oi.position_x, oi.position_y,
-                g.name AS garment_name, g.image_url AS garment_image_url
+                g.id AS garment_id, g.name AS garment_name, g.image_url AS garment_image_url
             FROM (SELECT id FROM outfits ORDER BY likes_count DESC, created_at DESC LIMIT 6) top_o
             JOIN outfits o       ON o.id = top_o.id
             JOIN users u         ON u.id = o.user_id
@@ -26,9 +26,9 @@ indexController.renderHome = async (req, res, next) => {
         `);
 
         const [trending] = await db.query(`
-            SELECT id, name, image_url, category
+            SELECT id, name, image_url, category, price
             FROM garments
-            WHERE category <> 'model'
+            WHERE category <> 'model' AND is_active = 1
             ORDER BY RAND()
             LIMIT 8
         `);
@@ -65,10 +65,10 @@ indexController.renderHome = async (req, res, next) => {
 indexController.renderShop = async (req, res) => {
     const userId = req.session.user ? req.session.user.id : null;
     const category = CATEGORIES.includes(req.query.category) ? req.query.category : 'all';
-    const sortBy = ['likes', 'usage'].includes(req.query.sort_by) ? req.query.sort_by : 'default';
+    const sortBy = ['likes', 'usage', 'price_asc', 'price_desc'].includes(req.query.sort_by) ? req.query.sort_by : 'default';
     const q = (req.query.q || '').trim().slice(0, 60);
 
-    const where = ["g.category <> 'model'"];
+    const where = ["g.category <> 'model'", 'g.is_active = 1'];
     const params = [userId];
     if (category !== 'all') {
         where.push('g.category = ?');
@@ -81,6 +81,8 @@ indexController.renderShop = async (req, res) => {
 
     const orderBy = {
         likes: 'total_favorites DESC, g.name',
+        price_asc: 'g.price ASC, g.name',
+        price_desc: 'g.price DESC, g.name',
         usage: 'total_usage DESC, g.name',
         default: 'g.name'
     }[sortBy];
@@ -88,7 +90,8 @@ indexController.renderShop = async (req, res) => {
     try {
         const [garments] = await db.query(`
             SELECT
-                g.id, g.name, g.category, g.image_url,
+                g.id, g.name, g.category, g.image_url, g.price,
+                (SELECT COALESCE(SUM(stock), 0) FROM garment_sizes s WHERE s.garment_id = g.id) AS total_stock,
                 CASE WHEN uf.user_id IS NOT NULL THEN 1 ELSE 0 END AS is_favorite,
                 (SELECT COUNT(*) FROM user_favorites f WHERE f.garment_id = g.id) AS total_favorites,
                 (SELECT COUNT(*) FROM outfit_items i WHERE i.garment_id = g.id) AS total_usage
@@ -138,7 +141,7 @@ indexController.renderTester = async (req, res) => {
     }
     try {
         const [garments] = await db.query(`
-            SELECT g.id, g.name, g.category, g.image_url
+            SELECT g.id, g.name, g.category, g.image_url, g.price
             FROM garments g
             JOIN user_favorites uf ON uf.garment_id = g.id
             WHERE uf.user_id = ? AND g.category <> 'model'

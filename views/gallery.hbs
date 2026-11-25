@@ -50,6 +50,7 @@
                                             <span class="outfit-date">· {{dateFormat createdAt}}</span>
                                         </div>
                                     </div>
+                                    <button type="button" class="btn-ink btn-sm-eros w-100" data-add-look="{{json (lookIds items)}}">{{{icon 'bag'}}} Comprar este look</button>
                                     <div class="outfit-footer">
                                         {{#if ../user}}
                                             <button type="button" class="like-btn {{#if isLikedByUser}}is-liked{{/if}}"

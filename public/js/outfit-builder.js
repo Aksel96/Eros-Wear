@@ -12,6 +12,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const removeBtn = document.getElementById('removeItem');
     const frontBtn = document.getElementById('bringFront');
     const ITEM_W = window.EROS_ITEM_WIDTH || 130;
+    const lookTotal = document.getElementById('lookTotal');
+    const addLookBtn = document.getElementById('addLookToCart');
+    const prices = {};
+    document.querySelectorAll('.garment-tile').forEach(t => { prices[t.dataset.id] = Number(t.dataset.price) || 0; });
+    const money = n => Number(n).toLocaleString('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 0 });
 
     let currentOutfitId = null;
     let selected = null;
@@ -25,6 +30,10 @@ document.addEventListener('DOMContentLoaded', () => {
         canvas.classList.toggle('has-items', hasItems);
         removeBtn.disabled = !selected;
         frontBtn.disabled = !selected;
+        const ids = Array.from(canvas.querySelectorAll('.outfit-item')).map(el => el.dataset.garmentId);
+        const total = ids.reduce((sum, id) => sum + (prices[id] || 0), 0);
+        if (lookTotal) lookTotal.textContent = money(total);
+        if (addLookBtn) addLookBtn.disabled = ids.length === 0;
     }
 
     function setMode(outfitId) {
@@ -201,6 +210,14 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     removeBtn.addEventListener('click', () => removeItem(selected));
+    if (addLookBtn) {
+        addLookBtn.addEventListener('click', () => {
+            const ids = [...new Set(Array.from(canvas.querySelectorAll('.outfit-item')).map(el => Number(el.dataset.garmentId)))];
+            ids.forEach(id => window.ErosCart.add(id, '', 1));
+            ErosUI.toast(`Agregamos ${ids.length} prendas a tu carrito.`, 'success', 2200);
+            window.ErosCart.open();
+        });
+    }
     frontBtn.addEventListener('click', () => {
         if (!selected) return;
         canvas.appendChild(selected);
@@ -287,6 +304,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!res.ok || !data.success) throw new Error(data.message || 'No encontramos ese outfit.');
 
             const isOwner = Number(data.userId) === currentUserId;
+            data.items.forEach(item => { if (item.price !== undefined && prices[item.garmentId] === undefined) prices[item.garmentId] = item.price; });
             data.items.forEach(item => addItem({
                 id: item.garmentId, name: item.name, src: item.imageUrl, x: item.x, y: item.y
             }));

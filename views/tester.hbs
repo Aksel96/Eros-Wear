@@ -24,7 +24,7 @@
                         <div class="studio-catalog" id="garment-catalog">
                             {{#each garments}}
                                 <div class="garment-tile" draggable="true" tabindex="0" role="button"
-                                     data-id="{{id}}" data-name="{{name}}" data-src="{{image_url}}"
+                                     data-id="{{id}}" data-name="{{name}}" data-src="{{image_url}}" data-price="{{price}}"
                                      aria-label="Agregar {{name}} al lienzo">
                                     <img src="{{image_url}}" alt="" loading="lazy">
                                     <span>{{name}}</span>
@@ -55,6 +55,11 @@
                             <strong>Tu lienzo está listo</strong>
                             <span>Arrastra una prenda aquí o tócala para agregarla</span>
                         </div>
+                    </div>
+
+                    <div class="look-total">
+                        <div><span>Total del look</span><strong id="lookTotal">$0</strong></div>
+                        <button type="button" class="btn-rose btn-sm-eros btn-look" id="addLookToCart" disabled>{{{icon 'bag'}}} Agregar look al carrito</button>
                     </div>
 
                     <div class="canvas-actions">
@@ -96,5 +101,5 @@
 </section>
 
 {{#if user}}
-    <script src="/js/outfit-builder.js?v=2"></script>
+    <script src="/js/outfit-builder.js?v=3"></script>
 {{/if}}

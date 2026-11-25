@@ -15,7 +15,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Lato:wght@400;700&family=Montserrat:wght@600;700;900&display=swap" rel="stylesheet">
     <link href="/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="/css/style.css?v=2">
+    <link rel="stylesheet" href="/css/style.css?v=3">
 </head>
 <body>
 
@@ -37,9 +37,13 @@
     {{#each error_msg}}<div class="d-none" data-flash="error">{{this}}</div>{{/each}}
 </div>
 
+{{#if whatsappUrl}}<a class="wa-float" href="{{whatsappUrl}}" target="_blank" rel="noopener" aria-label="Escríbenos por WhatsApp">{{{icon 'whatsapp'}}}</a>{{/if}}
+
 {{> dialogs}}
+{{> cart}}
 
 <script src="/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
-<script src="/js/main.js?v=2"></script>
+<script src="/js/main.js?v=3"></script>
+<script src="/js/cart.js?v=3"></script>
 </body>
 </html>

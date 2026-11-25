@@ -5,7 +5,7 @@
             Eros<small>Wear</small>
         </a>
 
-        <button class="nav-toggle ms-auto" type="button" id="navToggle" aria-label="Abrir menú" aria-expanded="false" aria-controls="navPanel">
+        <button class="nav-toggle" type="button" id="navToggle" aria-label="Abrir menú" aria-expanded="false" aria-controls="navPanel">
             <span></span><span></span><span></span>
         </button>
 
@@ -39,5 +39,9 @@
                 {{/if}}
             </div>
         </nav>
+
+        <button type="button" class="cart-toggle" data-open-cart aria-label="Abrir carrito">
+            {{{icon 'bag'}}}<span class="cart-count d-none">0</span>
+        </button>
     </div>
 </header>
