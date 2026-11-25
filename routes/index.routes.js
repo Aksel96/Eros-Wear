@@ -5,6 +5,9 @@ const indexController = require('../controllers/index.controller');
 const outfitController = require('../controllers/outfit.controller');
 const { isLoggedIn } = require('../controllers/auth.controller');
 
+// Verificación de salud para el hosting (no toca la base de datos)
+router.get('/healthz', (req, res) => res.json({ ok: true }));
+
 // Páginas
 router.get('/', indexController.renderHome);
 router.get('/shop', indexController.renderShop);
