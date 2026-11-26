@@ -1,158 +1,76 @@
-{{! views/shop.hbs }}
+<section class="page-hero grain">
+    <div class="hero-bg-word" aria-hidden="true">SHOP</div>
+    <div class="container position-relative" style="z-index: 2;">
+        <span class="eyebrow">Catálogo oficial</span>
+        <h1>La <span class="outline">colección</span></h1>
+        <p>Piezas que mezclan la sastrería clásica con la actitud de la calle. Elige talla, arma tu carrito y envíanos tu pedido por WhatsApp.</p>
+    </div>
+</section>
 
-<style>
-    /* ----------------------------------- */
-    /* Estilos de la marca Eros Wear */
-    /* ----------------------------------- */
-    .brand-title {
-        font-family: 'Cinzel', serif;
-        color: #5E35B1; /* Deep Amethyst */
-        font-weight: 700;
-    }
-    .brand-subtitle {
-        color: #263238; /* Charcoal Dusk */
-        font-family: 'Lato', sans-serif;
-    }
-    .category-header {
-        background-color: #F5F5F5; /* Cloud White */
-        border-left: 5px solid #5E35B1; /* Deep Amethyst Line */
-    }
-    .shop-item-card {
-        transition: transform 0.2s, box-shadow 0.2s;
-    }
-    .shop-item-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 4px 12px rgba(94, 53, 177, 0.3); /* Sombra morada */
-    }
-
-    .filter-control {
-        background-color: #F5F5F5; /* Cloud White */
-        padding: 20px;
-        border-radius: 8px;
-        border: 1px solid #ddd;
-    }
-</style>
-
-<h1 class="text-center my-4 brand-title pt-3">Catálogo Oficial de Eros Wear</h1>
-<p class="lead text-center brand-subtitle" style="color: #B7926F">Descubre las prendas disponibles en nuestra colección</p>
-
-<hr>
-
-<div class="container my-5">
-    {{!-- CONTROLES DE FILTRADO Y ORDENAMIENTO --}}
-    <div class="row mb-5 filter-control">
-        <h5 class="brand-title" style="font-size: 1.2rem;">Filtros y Ordenamiento</h5>
-
-        <form method="GET" action="/shop" class="d-flex flex-wrap align-items-end">
-
-            {{!-- Filtro por Categoría --}}
-            <div class="col-md-4 col-sm-6 mb-3 pe-3">
-                <label for="category-select" class="form-label small">Filtrar por Tipo de Prenda:</label>
-                <select name="category" id="category-select" class="form-select form-select-sm">
-                    <option value="all">Todas las Categorías</option>
-                    {{!-- Estas opciones deben coincidir con los valores de la DB: 'top', 'bottom', 'shoes' --}}
-                    <option value="top" {{#if (eq currentCategory 'top')}}selected{{/if}}>Parte Superior</option>
-                    <option value="bottom" {{#if (eq currentCategory 'bottom')}}selected{{/if}}>Parte Inferior</option>
-                    <option value="shoes" {{#if (eq currentCategory 'shoes')}}selected{{/if}}>Zapatos</option>
-                    {{!-- Puedes añadir 'accessory' si corresponde --}}
-                </select>
+<section class="pb-5">
+    <div class="container">
+        <form method="GET" action="/shop" class="toolbar" id="shopFilters">
+            <div class="chips" role="group" aria-label="Filtrar por categoría">
+                {{#each filters}}
+                    <a class="chip {{#if (eq value ../currentCategory)}}active{{/if}}"
+                       href="/shop?category={{value}}{{#unless (eq ../currentSort 'default')}}&sort_by={{../currentSort}}{{/unless}}{{#if ../q}}&q={{../q}}{{/if}}">
+                        {{label}} <span class="count">{{count}}</span>
+                    </a>
+                {{/each}}
             </div>
-
-            {{!-- Ordenamiento --}}
-            <div class="col-md-4 col-sm-6 mb-3 pe-3">
-                <label for="sort-select" class="form-label small">Ordenar por:</label>
-                <select name="sort_by" id="sort-select" class="form-select form-select-sm">
+            <div class="toolbar-right">
+                <input type="hidden" name="category" value="{{currentCategory}}">
+                <label class="search-field">
+                    {{{icon 'search'}}}
+                    <input type="search" name="q" value="{{q}}" placeholder="Buscar prenda" aria-label="Buscar prenda">
+                </label>
+                <select name="sort_by" class="select-eros" aria-label="Ordenar" onchange="this.form.submit()">
                     <option value="default" {{#if (eq currentSort 'default')}}selected{{/if}}>Nombre (A-Z)</option>
-                    <option value="likes" {{#if (eq currentSort 'likes')}}selected{{/if}}>Popularidad (Favoritos)</option>
-                    <option value="usage" {{#if (eq currentSort 'usage')}}selected{{/if}}>Veces Usado en Outfits</option>
+                    <option value="price_asc" {{#if (eq currentSort 'price_asc')}}selected{{/if}}>Precio: menor a mayor</option>
+                    <option value="price_desc" {{#if (eq currentSort 'price_desc')}}selected{{/if}}>Precio: mayor a menor</option>
+                    <option value="likes" {{#if (eq currentSort 'likes')}}selected{{/if}}>Más favoritas</option>
+                    <option value="usage" {{#if (eq currentSort 'usage')}}selected{{/if}}>Más usadas en outfits</option>
                 </select>
-            </div>
-
-            {{!-- Botón de Aplicar --}}
-            <div class="col-md-4 col-sm-12 mb-3">
-                <button type="submit" class="btn w-100" style="background-color: #5E35B1; color: white;">
-                    Aplicar Filtros
-                </button>
             </div>
         </form>
-    </div>
 
-    {{!-- ELIMINAR EL LOOP DE AGRUPACIÓN POR CATEGORÍA --}}
-    {{!-- Ahora solo recorremos el array plano 'garments' --}}
+        {{#if dbError}}
+            <div class="db-alert mt-4">No pudimos cargar el catálogo. Revisa la conexión con la base de datos.</div>
+        {{/if}}
 
-    <div class="row">
+        <p class="result-count">
+            <strong>{{resultCount}}</strong> {{#if (eq resultCount 1)}}prenda{{else}}prendas{{/if}}
+            {{#if q}}para “{{q}}”{{/if}}
+            {{#unless user}} · <a href="/login">Inicia sesión</a> para usar el probador{{/unless}}
+        </p>
+
         {{#if garments}}
-            {{#each garments}}
-            {{!-- Tarjeta Individual de Prenda --}}
-                <div class="col-6 col-md-3 mb-4">
-                    <div class="card shop-item-card h-100 text-center shadow-sm" style="cursor: pointer;">
-                        <div class="card-body d-flex flex-column align-items-center">
-
-                            <img src="{{image_url}}" alt="{{name}}" style="max-height: 150px; max-width: 100%; object-fit: contain;">
-
-                            <h5 class="card-title mt-3" style="color: #263238;">{{name}}</h5>
-
-                            {{!-- INFORMACIÓN DE USO (DEBUG/EXTRA) --}}
-                            <small class="text-muted small">
-                                Favoritos: {{total_favorites}} | Usado: {{total_usage}}
-                            </small>
-
-                            {{!-- BOTÓN AGREGAR AL CREADOR (lógica toggle) --}}
+            <div class="row g-3 g-md-4">
+                {{#each garments}}
+                    <div class="col-6 col-md-4 col-xl-3">
+                        <div class="position-relative h-100">
+                            {{> productCard this}}
                             {{#if ../user}}
-                                <button
-                                        class="btn btn-sm shop-favorite-btn mt-auto"
-                                        data-garment-id="{{id}}"
-                                        data-is-favorite="{{is_favorite}}"
-                                    {{!-- Estilos del botón: Rose Gold (agregar) o Red (eliminar) --}}
-                                    {{#if is_favorite}}
-                                        style="background-color: #C62828; border-color: #C62828; color: white;"
-                                    {{else}}
-                                        style="background-color: #B7926F; border-color: #B7926F; color: #263238;"
-                                    {{/if}}>
-
-                                    {{#if is_favorite}}
-                                        Eliminar del Catálogo
-                                    {{else}}
-                                        Agregar al Creador
-                                    {{/if}}
+                                <button type="button" class="fav-icon-btn {{#if is_favorite}}is-active{{/if}}" data-garment-id="{{id}}" data-is-favorite="{{is_favorite}}"
+                                        style="position:absolute; right: .8rem; top: .8rem; z-index: 5; background: rgba(255,255,255,.9);"
+                                        title="{{#if is_favorite}}Quitar de mi probador{{else}}Agregar a mi probador{{/if}}"
+                                        aria-label="{{#if is_favorite}}Quitar de mi probador{{else}}Agregar a mi probador{{/if}}" aria-pressed="{{#if is_favorite}}true{{else}}false{{/if}}">
+                                    {{{icon 'hanger'}}}
                                 </button>
-                            {{else}}
-                                <small class="text-muted mt-auto">Inicia sesión para agregar</small>
                             {{/if}}
-
                         </div>
                     </div>
-                </div>
-            {{/each}}
+                {{/each}}
+            </div>
         {{else}}
-            <div class="col-12">
-                <div class="alert alert-info text-center">
-                    No se encontraron prendas con los filtros seleccionados
-                </div>
+            <div class="empty-state">
+                <div class="empty-icon">{{{icon 'search'}}}</div>
+                <h3>Sin resultados</h3>
+                <p>No encontramos prendas con esos filtros. Prueba con otra categoría o búsqueda.</p>
+                <a href="/shop" class="btn-ghost">Limpiar filtros</a>
             </div>
         {{/if}}
     </div>
+</section>
 
-</div>
-
-{{! views/shop.hbs (AÑADIR MODAL AL FINAL) }}
-
-<div class="modal fade" id="garmentModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title brand-title" id="modalGarmentName" style="color: #5E35B1;">Nombre de la Prenda</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-            </div>
-            <div class="modal-body text-center">
-                <img id="modalGarmentImage" src="" alt="Prenda en Zoom" class="img-fluid" style="max-height: 400px;">
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar (ESC)</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-{{! views/shop.hbs (AL FINAL DEL ARCHIVO) }}
-<script src="/js/shop.js"></script>
+<script src="/js/shop.js?v=3"></script>

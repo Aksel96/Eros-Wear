@@ -1,0 +1,20 @@
+<div class="offcanvas offcanvas-end cart-drawer" tabindex="-1" id="cartDrawer" aria-labelledby="cartTitle">
+    <div class="offcanvas-header">
+        <h2 id="cartTitle">Tu carrito</h2>
+        <button type="button" class="icon-btn" data-bs-dismiss="offcanvas" aria-label="Cerrar carrito">{{{icon 'close'}}}</button>
+    </div>
+    <div class="offcanvas-body" id="cartBody"></div>
+    <div class="cart-footer d-none" id="cartFooter">
+        <div class="cart-total"><span>Total estimado</span><strong id="cartTotal">$0</strong></div>
+        <p class="cart-note">Precios en MXN con IVA incluido. No se cobra en línea: enviamos tu pedido por WhatsApp y coordinamos pago y entrega contigo.</p>
+        <div class="field mb-2">
+            <label for="cartName">Tu nombre</label>
+            <input type="text" id="cartName" class="form-control" maxlength="100" autocomplete="name" data-default="{{user.nickname}}" placeholder="¿Cómo te llamamos?">
+        </div>
+        <div class="field mb-3">
+            <label for="cartNotes">Notas (opcional)</label>
+            <textarea id="cartNotes" class="form-control" rows="2" maxlength="500" placeholder="Colonia o ciudad para la entrega, dudas, etc."></textarea>
+        </div>
+        <button type="button" class="btn-eros w-100" id="cartSend">{{{icon 'whatsapp'}}} Enviar pedido por WhatsApp</button>
+    </div>
+</div>

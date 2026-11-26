@@ -1,78 +1,48 @@
-{{! views/register.hbs }}
+<section class="auth">
+    <div class="auth-visual grain">
+        <div class="hero-bg-word" aria-hidden="true">EROS</div>
+        <span class="eyebrow position-relative" style="z-index:2;">Únete a la comunidad</span>
+        <img src="/img/garments/chaqueta-morada.png" alt="">
+        <blockquote>Crea, combina y comparte looks con <span>actitud</span>.</blockquote>
+    </div>
 
-<style>
-    /* Estilos de la marca Eros Wear para el título */
-    .brand-header {
-        background-color: #B7926F !important; /* Deep Amethyst */
-        font-family: 'Cinzel', serif;
-        font-weight: 600;
-    }
-    /* Estilos para el botón principal (Registro) */
-    .register-btn {
-        background-color: #B7926F; /* Deep Amethyst */
-        border-color: #5E35B1;
-        color: white;
-    }
-    .register-btn:hover {
-        background-color: #7953c5;
-        border-color: #7953c5;
-        color: white;
-    }
-    /* Estilo para el enlace en el footer */
-    .brand-link {
-        color: #5E35B1;
-    }
-</style>
+    <div class="auth-form-side">
+        <div class="auth-card">
+            <span class="eyebrow">Crear cuenta</span>
+            <h1>Tu firma de estilo</h1>
+            <p class="sub">Gratis, en menos de un minuto.</p>
 
-<div class="row mt-5">
-    <div class="col-md-6 mx-auto">
-        <div class="card shadow">
-
-            {{!-- CABECERA CON ESTILO DE MARCA --}}
-            <div class="card-header text-center brand-header">
-                {{!-- Aseguramos el color blanco con text-white --}}
-                <h3 class="mb-0 text-white">Registrar Nuevo Usuario</h3>
-            </div>
-
-            <div class="card-body">
-                {{!-- FORMULARIO DE REGISTRO --}}
-                <form action="/register" method="POST" id="registrationForm">
-
-                    <div class="mb-3">
-                        <label for="nickname" class="form-label">Apodo / Nombre</label>
-                        <input type="text" id="nickname" name="nickname" class="form-control" required>
-                        <div id="nicknameFeedback" class="invalid-feedback"></div>
+            <form action="/register" method="POST" id="registrationForm" novalidate>
+                <div class="field">
+                    <label for="nickname">Apodo</label>
+                    <input type="text" id="nickname" name="nickname" class="form-control" maxlength="50" autocomplete="nickname" required autofocus>
+                    <div id="nicknameFeedback" class="invalid-feedback"></div>
+                </div>
+                <div class="field">
+                    <label for="email">Correo electrónico</label>
+                    <input type="email" id="email" name="email" class="form-control" autocomplete="email" required>
+                    <div id="emailFeedback" class="invalid-feedback"></div>
+                </div>
+                <div class="field">
+                    <label for="password">Contraseña</label>
+                    <div class="password-wrap">
+                        <input type="password" id="password" name="password" class="form-control" autocomplete="new-password" required>
+                        <button type="button" class="password-toggle" aria-label="Mostrar contraseña">{{{icon 'eye'}}}</button>
                     </div>
+                    <div class="strength" aria-hidden="true"><span id="strengthBar"></span></div>
+                    <div id="passwordFeedback" class="invalid-feedback d-block"></div>
+                </div>
+                <div class="field">
+                    <label for="confirm_password">Confirmar contraseña</label>
+                    <input type="password" id="confirm_password" class="form-control" autocomplete="new-password" required>
+                    <div id="confirmPasswordFeedback" class="invalid-feedback"></div>
+                </div>
+                <button type="submit" class="btn-eros w-100 mt-2">Crear mi cuenta {{{icon 'arrow'}}}</button>
+            </form>
 
-                    <div class="mb-3">
-                        <label for="email" class="form-label">Correo Electrónico</label>
-                        <input type="email" id="email" name="email" class="form-control" required>
-                        <div id="emailFeedback" class="invalid-feedback"></div>
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="password" class="form-label">Contraseña</label>
-                        <input type="password" id="password" name="password" class="form-control" required>
-                        <div id="passwordFeedback" class="invalid-feedback"></div>
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="confirm_password" class="form-label">Confirmar Contraseña</label>
-                        <input type="password" id="confirm_password" class="form-control" required>
-                        <div id="confirmPasswordFeedback" class="invalid-feedback"></div>
-                    </div>
-
-                    {{!-- BOTÓN PRINCIPAL CON ESTILO DE MARCA --}}
-                    <button type="submit" class="btn register-btn w-100">Registrarme</button>
-                </form>
-            </div>
-
-            <div class="card-footer text-center">
-                <small>¿Ya tienes cuenta? <a href="/login" class="brand-link">Inicia Sesión aquí</a></small>
-            </div>
+            <p class="auth-switch">¿Ya tienes cuenta? <a href="/login">Inicia sesión</a></p>
         </div>
     </div>
-</div>
+</section>
 
-{{!-- Incluir el script de validación después del formulario --}}
-<script src="/js/validation.js"></script>
+<script src="/js/validation.js?v=2"></script>

@@ -1,67 +1,47 @@
-{{! views/partials/navbar.hbs }}
-
-{{!-- Fondo Deep Amethyst (#5E35B1) y navbar-dark para texto blanco --}}
-<nav class="navbar navbar-expand-lg navbar-light navbar-custom">
-    <div class="container">
-
-        {{!-- MARCA: Sin emoji y color blanco --}}
-        <a class="navbar-brand" href="/" style="color: white; font-family: 'Cinzel', serif;">
-            Eros Wear
+<header class="navbar-eros" id="siteNav">
+    <div class="container d-flex align-items-center">
+        <a class="brand" href="/" aria-label="Eros Wear, inicio">
+            <span class="brand-mark">E</span>
+            Eros<small>Wear</small>
         </a>
 
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
+        <button class="nav-toggle" type="button" id="navToggle" aria-label="Abrir menú" aria-expanded="false" aria-controls="navPanel">
+            <span></span><span></span><span></span>
         </button>
 
-        <div class="collapse navbar-collapse" id="navbarNav">
-
-            {{!-- Sección de Navegación Principal --}}
-            <ul class="navbar-nav me-auto">
-                <li class="nav-item">
-                    <a class="nav-link" href="/">Inicio</a>
-                </li>
-                {{!-- ¡NUEVO ENLACE! --}}
-                <li class="nav-item">
-                    <a class="nav-link" href="/shop">Catálogo</a>
-                </li>
-                <li class="nav-item">
-                    {{!-- Texto simplificado --}}
-                    <a class="nav-link" href="/tester">Creador de Outfits</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="/gallery">Galería Social</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="/visitors">Comunidad</a>
-                </li>
+        <nav class="nav-panel" id="navPanel">
+            <ul class="nav-links">
+                <li><a href="/" class="{{#if (eq currentPath '/')}}active{{/if}}">Inicio</a></li>
+                <li><a href="/shop" class="{{#if (startsWith currentPath '/shop')}}active{{/if}}">Catálogo</a></li>
+                <li><a href="/tester" class="{{#if (startsWith currentPath '/tester')}}active{{/if}}">Probador</a></li>
+                <li><a href="/gallery" class="{{#if (startsWith currentPath '/gallery')}}active{{/if}}">Galería</a></li>
+                <li><a href="/visitors" class="{{#if (startsWith currentPath '/visitors')}}active{{/if}}">Comunidad</a></li>
             </ul>
 
-            {{!-- Sección de Autenticación --}}
-            <ul class="navbar-nav ms-auto">
+            <div class="nav-auth">
                 {{#if user}}
-                {{!-- VISTAS PARA USUARIO LOGUEADO --}}
-                    <li class="nav-item">
-                        {{!-- Saludo en blanco --}}
-                        <span class="nav-link" style="color: white;">
-                            Bienvenido, <b>{{user.nickname}}</b>
-                        </span>
-                    </li>
-                    <li class="nav-item">
-                        {{!-- Botón de contorno blanco --}}
-                        <a class="btn btn-outline-light ms-2" href="/logout">Cerrar Sesión</a>
-                    </li>
+                    <div class="dropdown">
+                        <button class="user-chip dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <span class="avatar">{{initial user.nickname}}</span>
+                            <span>{{user.nickname}}</span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end dropdown-menu-eros">
+                            <li><a class="dropdown-item" href="/tester">Mi probador</a></li>
+                            <li><a class="dropdown-item" href="/gallery?mine=1">Mis outfits</a></li>
+                            <li><a class="dropdown-item" href="/shop">Agregar prendas</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="/logout">Cerrar sesión</a></li>
+                        </ul>
+                    </div>
                 {{else}}
-                {{!-- VISTAS PARA VISITANTES --}}
-                    <li class="nav-item">
-                        {{!-- Botón de contorno blanco --}}
-                        <a class="btn btn-light" style="color: #5E35B1;" href="/login">Iniciar Sesión</a>
-                    </li>
-                    <li class="nav-item">
-                        {{!-- Botón de registro con fondo blanco y texto morado --}}
-                        <a class="btn btn-light ms-2" style="color: #5E35B1;" href="/register">Registro</a>
-                    </li>
+                    <a class="btn-light-ghost" href="/login">Entrar</a>
+                    <a class="btn-eros" href="/register">Crear cuenta</a>
                 {{/if}}
-            </ul>
-        </div>
+            </div>
+        </nav>
+
+        <button type="button" class="cart-toggle" data-open-cart aria-label="Abrir carrito">
+            {{{icon 'bag'}}}<span class="cart-count d-none">0</span>
+        </button>
     </div>
-</nav>
+</header>

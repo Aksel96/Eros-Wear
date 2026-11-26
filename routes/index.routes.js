@@ -1,50 +1,35 @@
-// Ejemplo: routes/index.routes.js
-
+// routes/index.routes.js
 const express = require('express');
 const router = express.Router();
 const indexController = require('../controllers/index.controller');
-const outfitController = require('../controllers/outfit.controller'); // Nuevo controlador
+const outfitController = require('../controllers/outfit.controller');
+const storeController = require('../controllers/store.controller');
+const { isLoggedIn } = require('../controllers/auth.controller');
 
-// routes/index.routes.js (AGREGAR)
+// Verificación de salud para el hosting (no toca la base de datos)
+router.get('/healthz', (req, res) => res.json({ ok: true }));
 
-const { isLoggedIn } = require('../controllers/auth.controller'); // Necesaria para proteger la actualización
-
-// RUTA RAIZ (HOME)
-router.get('/', indexController.renderHome); // <-- CAMBIAR A renderHome
-
-// RUTA DEL PROBADOR/CANVAS (Ya no es el Home, necesita sus propios datos)
-router.get('/tester', indexController.renderTester);
-
-// Ruta del Catálogo de la Tienda
+// Páginas
+router.get('/', indexController.renderHome);
 router.get('/shop', indexController.renderShop);
-
-// 1. Ruta para obtener los datos de un outfit por ID (Cargar al Canvas)
-router.get('/outfits/:id', outfitController.getOutfitById);
-
-// 2. Ruta para actualizar (sobrescribir) un outfit existente
-router.put('/outfits/:id', isLoggedIn, outfitController.updateOutfit);
-
-
-// Lista de Visitantes (Nueva página)
+router.get('/product/:id', storeController.renderProduct);
+router.get('/tester', indexController.renderTester);
+router.get('/gallery', outfitController.renderGallery);
 router.get('/visitors', indexController.renderVisitors);
 
-// Ruta para agregar una prenda a favoritos del usuario
+// Carrito y pedidos (por WhatsApp)
+router.post('/api/cart/validate', storeController.validate);
+router.post('/api/orders', storeController.createOrder);
+
+// Prendas del probador (favoritos)
 router.post('/shop/favorite/:garment_id', isLoggedIn, indexController.addFavoriteGarment);
-
-// Controlador para la API de estilo
-router.post('/api/style-advice', isLoggedIn, indexController.handleStyleChat); // Asegúrate de que apunte al nombre correcto
-
-// Ruta para eliminar una prenda de favoritos del usuario
 router.post('/shop/unfavorite/:garment_id', isLoggedIn, indexController.removeFavoriteGarment);
 
-// Ruta de guardado protegida
+// Outfits
 router.post('/outfits', isLoggedIn, outfitController.saveOutfit);
-
-// Ruta para ver la galería (la crearemos más adelante)
-router.get('/gallery', outfitController.renderGallery);
-
+router.get('/outfits/:id', outfitController.getOutfitById);
+router.put('/outfits/:id', isLoggedIn, outfitController.updateOutfit);
 router.post('/outfits/delete/:id', isLoggedIn, outfitController.deleteOutfit);
+router.post('/outfits/:id/like', isLoggedIn, outfitController.toggleLike);
 
-router.post('/outfits/:id/like', outfitController.incrementLike);
-
-module.exports = router; // 👈 ¡CLAVE! Exportar el objeto router
+module.exports = router;

@@ -1,64 +1,35 @@
-{{! views/login.hbs }}
+<section class="auth">
+    <div class="auth-visual grain">
+        <div class="hero-bg-word" aria-hidden="true">EROS</div>
+        <span class="eyebrow position-relative" style="z-index:2;">Bienvenido de vuelta</span>
+        <img src="/img/garments/Wine Attribute.png" alt="">
+        <blockquote>“La moda es la armadura para <span>sobrevivir</span> la realidad de todos los días.”</blockquote>
+    </div>
 
-<style>
-    /* Estilos de la marca Eros Wear para el título */
-    .brand-header {
-        background-color: #B7926F !important; /* Deep Amethyst */
-        color: white;
-        font-family: 'Cinzel', serif;
-        font-weight: 600;
-    }
-    /* Estilos para el botón principal */
-    .login-btn {
-        background-color: #B7926F; /* Deep Amethyst */
-        border-color: #5E35B1;
-        color: white;
-    }
-    .login-btn:hover {
-        background-color: #7953c5;
-        border-color: #7953c5;
-        color: white;
-    }
-</style>
+    <div class="auth-form-side">
+        <div class="auth-card">
+            <span class="eyebrow">Iniciar sesión</span>
+            <h1>Entra al estudio</h1>
+            <p class="sub">Tus prendas y outfits te están esperando.</p>
 
-<div class="row mt-5">
-    <div class="col-md-5 mx-auto">
-        <div class="card shadow">
-
-            {{!-- CABECERA CON ESTILO DE MARCA --}}
-            <div class="card-header text-center brand-header">
-                <h3 class="mb-0 text-white">Iniciar Sesión</h3>
-            </div>
-
-            <div class="card-body">
-                {{!-- Mostrar mensajes flash --}}
-                {{#if error_msg}}
-                    <div class="alert alert-danger">{{error_msg}}</div>
-                {{/if}}
-                {{#if success_msg}}
-                    <div class="alert alert-success">{{success_msg}}</div>
-                {{/if}}
-
-                <form action="/login" method="POST">
-
-                    <div class="mb-3">
-                        <label for="email" class="form-label">Correo Electrónico</label>
-                        <input type="email" id="email" name="email" class="form-control" required>
+            <form action="/login" method="POST" novalidate id="loginForm">
+                <div class="field">
+                    <label for="email">Correo electrónico</label>
+                    <input type="email" id="email" name="email" class="form-control" autocomplete="email" required autofocus>
+                </div>
+                <div class="field">
+                    <label for="password">Contraseña</label>
+                    <div class="password-wrap">
+                        <input type="password" id="password" name="password" class="form-control" autocomplete="current-password" required>
+                        <button type="button" class="password-toggle" aria-label="Mostrar contraseña">{{{icon 'eye'}}}</button>
                     </div>
+                </div>
+                <button type="submit" class="btn-eros w-100 mt-2">Entrar {{{icon 'arrow'}}}</button>
+            </form>
 
-                    <div class="mb-3">
-                        <label for="password" class="form-label">Contraseña</label>
-                        <input type="password" id="password" name="password" class="form-control" required>
-                    </div>
-
-                    {{!-- BOTÓN PRINCIPAL CON ESTILO DE MARCA --}}
-                    <button type="submit" class="btn login-btn w-100">Entrar</button>
-                </form>
-            </div>
-
-            <div class="card-footer text-center">
-                <small>¿No tienes cuenta? <a href="/register" style="color: #5E35B1;">Regístrate aquí</a></small>
-            </div>
+            <p class="auth-switch">¿Aún no tienes cuenta? <a href="/register">Créala gratis</a></p>
         </div>
     </div>
-</div>
+</section>
+
+<script src="/js/validation.js?v=2"></script>

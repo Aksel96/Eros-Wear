@@ -1,185 +1,105 @@
-{{! views/tester.hbs }}
+<section class="studio">
+    <div class="container-xl">
+        {{#if user}}
+            <div class="studio-head">
+                <div>
+                    <span class="eyebrow">Probador</span>
+                    <h1>Tu <span class="outline">estudio</span></h1>
+                </div>
+                <div class="d-flex flex-wrap gap-2">
+                    <a href="/shop" class="btn-light-ghost btn-sm-eros">{{{icon 'plus'}}} Agregar prendas</a>
+                    <a href="/gallery?mine=1" class="btn-light-ghost btn-sm-eros">{{{icon 'grid'}}} Mis outfits</a>
+                </div>
+            </div>
 
-<style>
-    /* ----------------------------------- */
-    /* Estilos de la marca Eros Wear */
-    /* ----------------------------------- */
-    .brand-title {
-        font-family: 'Cinzel', serif;
-        color: #5E35B1; /* Deep Amethyst */
-        font-weight: 700;
-    }
-    .brand-subtitle {
-        color: #B7926F; /* Rose Gold Muted */
-        font-family: 'Lato', sans-serif;
-    }
-    .canvas-border {
-        border-color: #5E35B1 !important; /* Borde morado oscuro */
-    }
-    /* Botón de Guardar */
-    .save-btn {
-        background-color: #5E35B1;
-        border-color: #5E35B1;
-        color: white;
-    }
-    .save-btn:hover {
-        background-color: #7953c5;
-        border-color: #7953c5;
-    }
-    /* Botón de Limpiar/Acción Secundaria */
-    .clear-btn {
-        color: #263238; /* Charcoal Dusk */
-        border-color: #263238;
-    }
-    .clear-btn:hover {
-        background-color: #263238;
-        color: white;
-    }
-    .garment-item {
-        transition: transform 0.2s;
-    }
-    .garment-item:hover {
-        transform: scale(1.05); /* Pequeño efecto hover para Drag & Drop */
-    }
-</style>
+            {{#if dbError}}
+                <div class="db-alert mb-3">No pudimos cargar tus prendas. Revisa la conexión con la base de datos.</div>
+            {{/if}}
 
-<h1 class="text-center my-4 brand-title pt-3">Probador de Estilos de Eros Wear</h1>
-
-{{#if user}}
-    <p class="lead text-center brand-subtitle">
-        ¡Hola, {{user.nickname}}! Crea tu próximo outfit arrastrando las prendas al lienzo.
-    </p>
-
-    <div class="row">
-
-        {{!-- 1. CATÁLOGO DE PRENDAS --}}
-        <div class="col-md-3">
-            <div class="card shadow-sm p-3 mb-3">
-                <h4 class="card-title brand-title">Tu Catálogo</h4>
-                <div id="garment-catalog">
-                    {{#each garments}}
-                    {{!-- Cada prenda es draggable (D&D) --}}
-                        <div class="garment-item p-1 border-bottom"
-                             data-id="{{id}}"
-                             data-name="{{name}}"
-                             draggable="true">
-                            <img src="{{image_url}}" alt="{{name}}" style="max-width: 50px; max-height: 50px; cursor: grab;">
-                            <small>{{name}}</small>
+            <div class="studio-grid" id="studio" data-user-id="{{user.id}}">
+                {{!-- Prendas del usuario --}}
+                <aside class="studio-panel catalog">
+                    <h2>Tus prendas <span class="count">{{garments.length}}</span></h2>
+                    {{#if garments}}
+                        <div class="studio-catalog" id="garment-catalog">
+                            {{#each garments}}
+                                <div class="garment-tile" draggable="true" tabindex="0" role="button"
+                                     data-id="{{id}}" data-name="{{name}}" data-src="{{image_url}}" data-price="{{price}}"
+                                     aria-label="Agregar {{name}} al lienzo">
+                                    <img src="{{image_url}}" alt="" loading="lazy">
+                                    <span>{{name}}</span>
+                                    <i class="add-hint" aria-hidden="true">+</i>
+                                </div>
+                            {{/each}}
                         </div>
-                    {{/each}}
-                    {{!-- MENSAJE DE FAVORITOS REQUERIDO --}}
-                    {{#unless garments}}
-                        <div class="alert alert-info mt-3">
-                            Tu catálogo está vacío. Agrega prendas desde la sección "Catálogo" para verlas aquí.
+                    {{else}}
+                        <div class="text-center py-4 px-2">
+                            <p class="text-soft small mb-3">Todavía no tienes prendas. Agrégalas desde el catálogo para combinarlas aquí.</p>
+                            <a href="/shop" class="btn-rose btn-sm-eros">Ir al catálogo</a>
                         </div>
-                    {{/unless}}
-                </div>
-            </div>
-        </div>
+                    {{/if}}
+                </aside>
 
-        {{!-- 2. EL CANVAS O PROBADOR --}}
-        <div class="col-md-6">
-            <div class="card shadow-lg">
-                <div class="card-header bg-light text-center">
-                    <h4 class="mb-0 brand-title">Tu Lienzo de Creación</h4>
-                </div>
-                {{!-- EL CANVAS: Borde morado y fondo blanco --}}
-                <div id="outfit-canvas"
-                     class="border border-3 canvas-border p-2 position-relative bg-white"
-                     style="height: 600px; overflow: hidden;">
-
-                    {{!-- Aquí se insertarán dinámicamente las imágenes arrastradas --}}
-                </div>
-                <div class="card-footer d-flex justify-content-between">
-                    <button class="btn btn-outline-secondary clear-btn" id="clearCanvas">Limpiar Canvas</button>
-                    <button class="btn save-btn" id="saveOutfit">Guardar Outfit</button>
-                </div>
-            </div>
-        </div>
-
-        {{!-- 3. GUARDADOS Y FAVORITOS (Placeholder) --}}
-        <div class="col-md-3">
-            {{!-- 3. INSTRUCCIONES (COLUMNA DERECHA) --}}
-            <div class="card shadow-sm p-3 mb-3">
-                <h4 class="card-title brand-title">Instrucciones</h4>
-
-                <ol class="list-group list-group-numbered mt-3">
-                    <li class="list-group-item instruction-step">
-                        Ve a Catálogo y agrega prendas al Creador.
-                    </li>
-                    <li class="list-group-item instruction-step">
-                        Las prendas aparecerán en tu Catálogo Personal.
-                    </li>
-                    <li class="list-group-item instruction-step">
-                        Arrastra la prenda deseada al lienzo.
-                    </li>
-                    <li class="list-group-item instruction-step">
-                        Arrastra la prenda en el lienzo para reposicionarla.
-                    </li>
-                    <li class="list-group-item instruction-step">
-                        Clic Derecho: Elimina una prenda del lienzo.
-                    </li>
-                    <li class="list-group-item instruction-step">
-                        Usa Guardar Outfit para almacenarlo en tu Galería.
-                    </li>
-                </ol>
-            </div>
-            <div class="card shadow-sm p-3">
-                <h4 class="card-title brand-title">Creaciones</h4>
-                <p class="brand-subtitle">Revisa y edita tus diseños en la galería.</p>
-                <a href="/gallery" class="btn btn-outline-info mt-2 clear-btn">Ver Galería Social</a>
-            </div>
-        </div>
-
-
-    </div>
-
-    {{! views/tester.hbs (AÑADIR MODAL DE CHATBOT AL FINAL) }}
-
-    <div class="modal fade" id="styleAdvisorModal" tabindex="-1" aria-labelledby="styleAdvisorModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content" style="border: 2px solid #5E35B1;">
-                <div class="modal-header" style="background-color: #000000; color: white;">
-                    <h5 class="modal-title brand-title" id="styleAdvisorModalLabel" style="color: white;">Asesor de Estilo</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body p-3">
-
-                    {{!-- Área de Mensajes del Chat --}}
-                    <div id="chat-messages" style="height: 300px; overflow-y: auto; background-color: #f8f8ff; border: 1px solid #ddd; padding: 10px; border-radius: 5px;">
-                        <div class="alert alert-info small mb-1">
-                           <strong>Eros Bot</strong>: ¡Hola! Soy tu asesor personal. Pregúntame sobre combinaciones de colores, tendencias o cómo elevar cualquier outfit con el toque audaz de Eros Wear.
+                {{!-- Lienzo --}}
+                <div class="canvas-wrap">
+                    <div class="canvas-toolbar">
+                        <div class="canvas-name">
+                            <input type="text" id="outfitName" maxlength="100" placeholder="Nombra tu outfit" aria-label="Nombre del outfit">
+                            <span class="mode-badge d-none" id="modeBadge">Editando</span>
                         </div>
                     </div>
 
-                    {{!-- Formulario de Entrada del Usuario --}}
-                    <form id="chat-form" class="mt-3">
-                        <div class="input-group">
-                            <input type="text" class="form-control" id="user-input" placeholder="Escribe tu pregunta de estilo..." required>
-                            <button class="btn text-white" type="submit" id="send-btn" style="background-color: #B7926F; border-color: #B7926F;">Enviar</button>
+                    <div id="outfit-canvas" aria-label="Lienzo del outfit">
+                        <div class="canvas-empty">
+                            {{{icon 'layers'}}}
+                            <strong>Tu lienzo está listo</strong>
+                            <span>Arrastra una prenda aquí o tócala para agregarla</span>
                         </div>
-                    </form>
+                    </div>
 
-                    <small class="text-muted mt-2 d-block">La IA opera bajo la personalidad de la marca Eros Wear.</small>
+                    <div class="look-total">
+                        <div><span>Total del look</span><strong id="lookTotal">$0</strong></div>
+                        <button type="button" class="btn-rose btn-sm-eros btn-look" id="addLookToCart" disabled>{{{icon 'bag'}}} Agregar look al carrito</button>
+                    </div>
+
+                    <div class="canvas-actions">
+                        <div class="left">
+                            <button type="button" class="icon-btn" id="bringFront" title="Traer al frente" aria-label="Traer al frente" disabled>{{{icon 'front'}}}</button>
+                            <button type="button" class="icon-btn" id="removeItem" title="Quitar prenda seleccionada" aria-label="Quitar prenda seleccionada" disabled>{{{icon 'trash'}}}</button>
+                            <button type="button" class="icon-btn" id="clearCanvas" title="Limpiar lienzo" aria-label="Limpiar lienzo">{{{icon 'undo'}}}</button>
+                        </div>
+                        <button type="button" class="btn-eros" id="saveOutfit">{{{icon 'save'}}} <span id="saveLabel">Guardar outfit</span></button>
+                    </div>
+                </div>
+
+                {{!-- Ayuda --}}
+                <aside class="studio-aside-right">
+                    <div class="studio-panel">
+                        <h2>Cómo usarlo</h2>
+                        <ol class="tips">
+                            <li><span>Agrega prendas desde el catálogo.</span></li>
+                            <li><span>Arrástralas al lienzo o tócalas para colocarlas.</span></li>
+                            <li><span>Muévelas libremente; con <kbd>←</kbd><kbd>→</kbd> afinas la posición.</span></li>
+                            <li><span>Selecciona una prenda y pulsa <kbd>Supr</kbd> para quitarla.</span></li>
+                            <li><span>Ponle nombre y guárdalo en la galería.</span></li>
+                        </ol>
+                    </div>
+                </aside>
+            </div>
+        {{else}}
+            <div class="gate">
+                <span class="eyebrow">Probador</span>
+                <h1 class="mt-3">Diseña tu <span class="outline">próximo look</span></h1>
+                <p>Crea una cuenta gratis para guardar prendas, combinarlas en el lienzo y compartir tus outfits con la comunidad.</p>
+                <div class="d-flex flex-wrap justify-content-center gap-2">
+                    <a href="/register" class="btn-eros">Crear cuenta</a>
+                    <a href="/login" class="btn-light-ghost">Ya tengo cuenta</a>
                 </div>
             </div>
-        </div>
+        {{/if}}
     </div>
+</section>
 
-
-    {{!-- BOTÓN FLOTANTE FAB (Se mantiene fijo en la esquina inferior derecha) --}}
-    <button class="fab-advisor shadow-lg"
-            id="openAdviceModal"
-            data-bs-toggle="modal"
-            data-bs-target="#styleAdvisorModal">
-        Asesor Personal
-     </button>
-
-    <script src="/js/outfit-builder.js"></script>
-
-{{else}}
-{{!-- Zona para visitantes no logueados --}}
-    <div class="alert alert-info text-center" role="alert" style="border-color: #5E35B1; color: #263238; background-color: #f0f0ff;">
-        Para crear y guardar outfits, por favor <a href="/login" style="color: #5E35B1; font-weight: bold;">Inicia Sesión</a> o <a href="/register" style="color: #5E35B1; font-weight: bold;">Regístrate</a>.
-    </div>
+{{#if user}}
+    <script src="/js/outfit-builder.js?v=3"></script>
 {{/if}}

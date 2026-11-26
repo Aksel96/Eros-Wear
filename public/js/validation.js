@@ -1,95 +1,84 @@
-// public/js/validation.js
-
+// public/js/validation.js · Validación de formularios de acceso
 document.addEventListener('DOMContentLoaded', () => {
-    const form = document.getElementById('registrationForm');
-    if (!form) return; // Salir si el formulario no existe en la página actual
-
-    const nicknameInput = document.getElementById('nickname');
-    const emailInput = document.getElementById('email');
-    const passwordInput = document.getElementById('password');
-    const confirmPasswordInput = document.getElementById('confirm_password');
-
-    // El evento 'submit' se dispara cuando el usuario intenta enviar el formulario
-    form.addEventListener('submit', (e) => {
-        let isValid = true;
-
-        // Limpiar estilos de Bootstrap antes de validar
-        [nicknameInput, emailInput, passwordInput, confirmPasswordInput].forEach(input => {
-            input.classList.remove('is-invalid', 'is-valid');
+    // Mostrar / ocultar contraseña
+    document.querySelectorAll('.password-toggle').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const input = btn.parentElement.querySelector('input');
+            const show = input.type === 'password';
+            input.type = show ? 'text' : 'password';
+            btn.setAttribute('aria-label', show ? 'Ocultar contraseña' : 'Mostrar contraseña');
         });
+    });
 
-        // 1. Validar Apodo (mínimo 3 caracteres)
-        if (nicknameInput.value.trim().length < 3) {
-            displayError(nicknameInput, 'El apodo debe tener al menos 3 caracteres.', 'nicknameFeedback');
-            isValid = false;
-        } else {
-            displaySuccess(nicknameInput);
-        }
+    const form = document.getElementById('registrationForm');
+    if (!form) return;
 
-        // 2. Validar Email
-        if (!validateEmail(emailInput.value)) {
-            displayError(emailInput, 'Introduce un correo electrónico válido.', 'emailFeedback');
-            isValid = false;
-        } else {
-            displaySuccess(emailInput);
-        }
+    const nickname = document.getElementById('nickname');
+    const email = document.getElementById('email');
+    const password = document.getElementById('password');
+    const confirm = document.getElementById('confirm_password');
+    const bar = document.getElementById('strengthBar');
 
-        // 3. Validar Contraseña (mínimo 6 caracteres, mayúsculas, minúsculas, números)
-        const passValidation = validatePassword(passwordInput.value);
-        if (!passValidation.valid) {
-            displayError(passwordInput, passValidation.message, 'passwordFeedback');
-            isValid = false;
-        } else {
-            displaySuccess(passwordInput);
-        }
+    const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-        // 4. Validar Confirmación de Contraseña
-        if (passwordInput.value !== confirmPasswordInput.value || confirmPasswordInput.value === '') {
-            displayError(confirmPasswordInput, 'Las contraseñas no coinciden.', 'confirmPasswordFeedback');
-            isValid = false;
-        } else {
-            displaySuccess(confirmPasswordInput);
-        }
+    function strength(value) {
+        let score = 0;
+        if (value.length >= 6) score++;
+        if (value.length >= 10) score++;
+        if (/[A-Z]/.test(value) && /[a-z]/.test(value)) score++;
+        if (/\d/.test(value)) score++;
+        if (/[^A-Za-z0-9]/.test(value)) score++;
+        return score;
+    }
 
+    password.addEventListener('input', () => {
+        const s = strength(password.value);
+        const colors = ['#C62828', '#C62828', '#B7926F', '#B7926F', '#7953c5', '#5E35B1'];
+        bar.style.width = `${(s / 5) * 100}%`;
+        bar.style.background = colors[s];
+    });
 
-        if (!isValid) {
-            e.preventDefault(); // Detiene el envío si la validación falla
-            // Mueve el foco al primer campo con error
+    function setState(input, feedbackId, message) {
+        const fb = document.getElementById(feedbackId);
+        input.classList.toggle('is-invalid', Boolean(message));
+        input.classList.toggle('is-valid', !message);
+        if (fb) fb.textContent = message || '';
+    }
+
+    function getChecks() {
+        return [
+            [nickname, 'nicknameFeedback', nickname.value.trim().length < 3 ? 'El apodo debe tener al menos 3 caracteres.' : ''],
+            [email, 'emailFeedback', !EMAIL_RE.test(email.value.trim()) ? 'Introduce un correo electrónico válido.' : ''],
+            [password, 'passwordFeedback',
+                password.value.length < 6 ? 'Usa al menos 6 caracteres.'
+                    : !(/[A-Z]/.test(password.value) && /[a-z]/.test(password.value) && /\d/.test(password.value))
+                        ? 'Combina mayúsculas, minúsculas y números.' : ''],
+            [confirm, 'confirmPasswordFeedback', !confirm.value || confirm.value !== password.value ? 'Las contraseñas no coinciden.' : '']
+        ];
+    }
+
+    function validate() {
+        let ok = true;
+        getChecks().forEach(([input, fb, msg]) => {
+            setState(input, fb, msg);
+            if (msg) ok = false;
+        });
+        return ok;
+    }
+
+    form.addEventListener('submit', e => {
+        if (!validate()) {
+            e.preventDefault();
             const firstInvalid = form.querySelector('.is-invalid');
-            if(firstInvalid) firstInvalid.focus();
+            if (firstInvalid) firstInvalid.focus();
         }
     });
 
-    // Funciones auxiliares
-
-    function validateEmail(email) {
-        // Expresión regular para validar el formato básico del email
-        const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        return re.test(String(email).toLowerCase());
-    }
-
-    function validatePassword(password) {
-        if (password.length < 6) {
-            return { valid: false, message: 'La contraseña debe tener al menos 6 caracteres.' };
-        }
-        if (!/[A-Z]/.test(password)) {
-            return { valid: false, message: 'Debe incluir al menos una mayúscula.' };
-        }
-        if (!/[a-z]/.test(password)) {
-            return { valid: false, message: 'Debe incluir al menos una minúscula.' };
-        }
-        if (!/[0-9]/.test(password)) {
-            return { valid: false, message: 'Debe incluir al menos un número.' };
-        }
-        return { valid: true };
-    }
-
-    function displayError(inputElement, message, feedbackId) {
-        inputElement.classList.add('is-invalid');
-        document.getElementById(feedbackId).textContent = message;
-    }
-
-    function displaySuccess(inputElement) {
-        inputElement.classList.add('is-valid');
-    }
+    [nickname, email, password, confirm].forEach(input => {
+        input.addEventListener('blur', () => {
+            if (!input.value) return;
+            const check = getChecks().find(([el]) => el === input);
+            if (check) setState(...check);
+        });
+    });
 });

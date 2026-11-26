@@ -1,106 +1,107 @@
-// app.js (VERSION CORREGIDA)
+// app.js · Eros Wear
+require('dotenv').config({ quiet: true });
+
 const express = require('express');
 const exphbs = require('express-handlebars');
 const path = require('path');
 const session = require('express-session');
+const MySQLStore = require('express-mysql-session')(session);
 const flash = require('connect-flash');
-require('dotenv').config();
+const compression = require('compression');
 
-// NOTA: Se eliminó 'const hbs = require('express-handlebars');' ya que no se usa.
+const db = require('./database/db');
+const helpers = require('./lib/hbs-helpers');
+const store = require('./lib/store');
 
-// 1. Inicialización
 const app = express();
-require('./database/db');
+const isProd = process.env.NODE_ENV === 'production';
 
-// 2. Configuración (Settings)
+// ---------------------------------------------------------------------
+// Configuración
+// ---------------------------------------------------------------------
 app.set('port', process.env.PORT || 3000);
 app.set('views', path.join(__dirname, 'views'));
+app.set('trust proxy', 1); // Render sirve la app detrás de un proxy HTTPS
+app.disable('x-powered-by');
 
-// Handlebars
 app.engine('.hbs', exphbs.engine({
     defaultLayout: 'main',
     layoutsDir: path.join(app.get('views'), 'layouts'),
     partialsDir: path.join(app.get('views'), 'partials'),
     extname: '.hbs',
-
-    // Bloque de Helpers correcto
-    helpers: {
-        json: function (context) { return JSON.stringify(context); },
-        isOwner: function (userId, creatorId) { return userId === creatorId; },
-        dateFormat: function (date) {
-            if (!date) return 'N/A';
-            return new Date(date).toLocaleDateString('es-ES', {
-                year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
-            });
-        },
-        eq: function (v1, v2) {
-            return v1 === v2;
-        },
-        formatDateShort: function (date) {
-            if (!date) return '';
-
-            // Crea un objeto Date. El formato de la DB se parsea automáticamente.
-            const d = new Date(date);
-
-            if (isNaN(d.getTime())) {
-                return date; // Retorna el valor original si la fecha es inválida
-            }
-
-            // Opciones de formato: mes, día, año, hora y minuto
-            const options = {
-                year: 'numeric',
-                month: '2-digit',
-                day: '2-digit',
-                hour: '2-digit',
-                minute: '2-digit',
-                hour12: true // Formato de 12 horas con AM/PM
-            };
-
-            // Usa 'en-US' para el formato MM/DD/YYYY y 'es-MX' o 'es-ES' si prefieres DD/MM/YYYY
-            // Usaremos 'en-US' para lograr el formato más directo.
-            return d.toLocaleString('es-ES', options);
-        },
-    }
+    helpers
 }));
 app.set('view engine', '.hbs');
 
-// 3. Middlewares
+// ---------------------------------------------------------------------
+// Middlewares
+// ---------------------------------------------------------------------
+app.use(compression());
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
+app.use(express.static(path.join(__dirname, 'public'), {
+    maxAge: isProd ? '7d' : 0
+}));
+// Bootstrap servido desde node_modules (sin depender de un CDN externo)
+app.use('/vendor/bootstrap', express.static(path.join(__dirname, 'node_modules', 'bootstrap', 'dist'), {
+    maxAge: isProd ? '30d' : 0
+}));
 
-// Sessiones y Flash deben ir antes de las Variables Globales
+if (!process.env.SESSION_SECRET) {
+    console.warn('SESSION_SECRET no está definido; usando un valor temporal. Defínelo en producción.');
+}
+
 app.use(session({
-    secret: process.env.SESSION_SECRET,
+    name: 'eros.sid',
+    secret: process.env.SESSION_SECRET || 'eros-wear-dev-secret',
+    store: new MySQLStore({ createDatabaseTable: true }, db),
     resave: false,
-    saveUninitialized: false
+    saveUninitialized: false,
+    cookie: {
+        httpOnly: true,
+        sameSite: 'lax',
+        secure: isProd,
+        maxAge: 1000 * 60 * 60 * 24 * 7 // 7 días
+    }
 }));
 app.use(flash());
 
-
-// ******************************************************
-// AHORA LAS VARIABLES GLOBALES ESTÁN EN EL LUGAR CORRECTO
-// ******************************************************
+// Variables globales para las vistas
 app.use((req, res, next) => {
-    // Estas variables ahora se inyectan en res.locals ANTES de que se ejecute cualquier ruta.
     res.locals.success_msg = req.flash('success_msg');
     res.locals.error_msg = req.flash('error_msg');
-    res.locals.user = req.session.user; // <-- EL CRUCIAL res.locals.user
+    res.locals.user = req.session.user;
+    res.locals.currentPath = req.path;
+    res.locals.year = new Date().getFullYear();
+    res.locals.whatsappEnabled = Boolean(store.getWhatsappNumber());
+    res.locals.whatsappUrl = store.getWhatsappNumber() ? `https://wa.me/${store.getWhatsappNumber()}` : null;
     next();
 });
 
-
-// 4. Archivos Estáticos (Public)
-app.use(express.static(path.join(__dirname, 'public')));
-
-// 5. Rutas (Routes) - Las rutas deben ir después de todos los middlewares.
+// ---------------------------------------------------------------------
+// Rutas
+// ---------------------------------------------------------------------
 app.use(require('./routes/index.routes'));
 app.use(require('./routes/auth.routes'));
 
-// 6. Arrancar Servidor
-app.listen(app.get('port'), () => {
-    console.log(`🚀 Servidor en puerto http://localhost:${app.get('port')}`);
+// 404
+app.use((req, res) => {
+    res.status(404).render('404', { title: 'Página no encontrada' });
 });
 
-// ******************************************************
-// El bloque hbs.create() REDUNDANTE ha sido ELIMINADO.
-// ******************************************************
+// Errores no controlados
+app.use((err, req, res, next) => { // eslint-disable-line no-unused-vars
+    console.error('Error no controlado:', err);
+    if (req.accepts('html')) {
+        return res.status(500).render('404', {
+            title: 'Algo salió mal',
+            code: '500',
+            message: 'Tuvimos un problema al procesar tu solicitud. Intenta de nuevo en un momento.'
+        });
+    }
+    res.status(500).json({ success: false, message: 'Error interno del servidor.' });
+});
+
+app.listen(app.get('port'), () => {
+    console.log(`Eros Wear escuchando en http://localhost:${app.get('port')}`);
+});

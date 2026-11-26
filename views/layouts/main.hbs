@@ -1,86 +1,49 @@
-{{! views/layouts/main.hbs (MODIFICADO) }}
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Eros Wear | Atrevimiento y Elegancia</title>
-    {{!-- Bootstrap CDN --}}
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    {{!-- Fuentes personalizadas --}}
+    <title>{{#if title}}{{title}} · {{/if}}Eros Wear</title>
+    <meta name="description" content="Eros Wear: elegancia audaz con corazón mexicano. Explora el catálogo, crea outfits en el probador y compártelos con la comunidad.">
+    <meta name="theme-color" content="#0a0810">
+    <meta property="og:title" content="Eros Wear · Viste la audacia">
+    <meta property="og:description" content="Elegancia atemporal y street wear con corazón mexicano.">
+    <meta property="og:image" content="/img/garments/chaqueta-morada.png">
+    <link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Lato:wght@400;700&display=swap" rel="stylesheet">
-    {{!-- Estilos propios --}}
-    <link rel="stylesheet" href="/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Lato:wght@400;700&family=Montserrat:wght@600;700;900&display=swap" rel="stylesheet">
+    <link href="/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css?v=3">
 </head>
 <body>
-{{!-- CONTENEDOR PRINCIPAL FLEXBOX (page-wrapper) --}}
-<div class="page-wrapper">
-{{!-- INCLUSIÓN DEL HEADER --}}
+
 {{> navbar}}
-    {{!-- ÁREA DE CONTENIDO FLEXIBLE (content-area) --}}
-    <div class="content-area">
-{{!-- Contenido de la página (el cuerpo de cada vista individual) --}}
-<div class="container p-4">
-    {{{ body }}}
+
+<div class="page-wrapper">
+    <main class="content-area" id="contenido">
+        {{{body}}}
+    </main>
+
+    {{#unless isStudio}}
+        {{> footer}}
+    {{/unless}}
 </div>
-    </div>
 
-{{!-- ==================================================== --}}
-{{!-- FOOTER (Pie de página) --}}
-{{!-- ==================================================== --}}
-
-<footer class="mt-5 py-4 text-white" style="background-color: black;">
-    <div class="container">
-        <div class="row">
-
-            {{!-- Columna 1: Marca y Copyright --}}
-            <div class="col-md-4 mb-3">
-                <h5 style="color: white; font-family: 'Cinzel', serif;">Eros Wear</h5>
-                <p class="small text-white-50">
-                    © 2025 Eros Wear. Todos los derechos reservados.
-                    <br>
-                    Diseño audaz y elegancia atemporal.
-                </p>
-            </div>
-
-            {{!-- Columna 2: Enlaces Rápidos --}}
-            <div class="col-md-4 mb-3">
-                <h6>Navegación Rápida</h6>
-                <ul class="list-unstyled small">
-                    <li><a href="/" class="text-white-50 text-decoration-none">Inicio</a></li>
-                    <li><a href="/shop" class="text-white-50 text-decoration-none">Catálogo</a></li>
-                    <li><a href="/tester" class="text-white-50 text-decoration-none">Creador de Outfits</a></li>
-                    <li><a href="/gallery" class="text-white-50 text-decoration-none">Galería Social</a></li>
-                    <li><a href="/visitors" class="text-white-50 text-decoration-none">Comunidad</a></li>
-                </ul>
-            </div>
-
-            {{!-- Columna 3: Conexión (Redes Sociales) --}}
-            <div class="col-md-4 mb-3">
-                <h6>Conéctate</h6>
-                <p class="small text-white-50">Síguenos para más:</p>
-                <div class="d-flex">
-                    <a href="#" class="btn btn-sm btn-outline-light me-2">Instagram</a>
-                    <a href="#" class="btn btn-sm btn-outline-light me-2">Facebook</a>
-                </div>
-            </div>
-
-        </div>
-        <div class="row">
-            <div class="col-12 text-center pt-3 border-top border-secondary">
-                <p class="small text-white-50 mb-0">Proyecto Final de Programación Web 2 | FES Aragón UNAM | Aksel Villela Andrade.</p>
-            </div>
-        </div>
-    </div>
-</footer>
+{{!-- Mensajes del servidor (flash) que main.js convierte en toasts --}}
+<div class="toast-stack" id="toastStack" aria-live="polite">
+    {{#each success_msg}}<div class="d-none" data-flash="success">{{this}}</div>{{/each}}
+    {{#each error_msg}}<div class="d-none" data-flash="error">{{this}}</div>{{/each}}
 </div>
-{{!-- El script de Bootstrap debe ir al final --}}
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-{{!-- Incluir el nuevo script principal --}}
-<script src="/js/main.js"></script>
 
+{{#if whatsappUrl}}<a class="wa-float" href="{{whatsappUrl}}" target="_blank" rel="noopener" aria-label="Escríbenos por WhatsApp">{{{icon 'whatsapp'}}}</a>{{/if}}
+
+{{> dialogs}}
+{{> cart}}
+
+<script src="/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+<script src="/js/main.js?v=3"></script>
+<script src="/js/cart.js?v=3"></script>
 </body>
 </html>

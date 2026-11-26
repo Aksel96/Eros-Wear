@@ -1,342 +1,221 @@
 // controllers/index.controller.js
 const db = require('../database/db');
+const { groupOutfitRows } = require('../lib/outfits');
 
 const indexController = {};
 
-const OpenAI = require('openai'); // Asegúrate de haber instalado 'openai'
-// Inicializar el cliente de OpenAI
-const openai = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY,
-});
+const CATEGORIES = ['top', 'bottom', 'shoes', 'accessory'];
 
-indexController.renderTester = async (req, res) => {
-    let conn;
+/**
+ * Inicio: hero, prendas en tendencia, outfits más populares y cifras de la comunidad.
+ */
+indexController.renderHome = async (req, res, next) => {
     try {
-        const user_id = req.session.user ? req.session.user.id : null;
-        let garments = [];
-        let query;
+        const [outfitRows] = await db.query(`
+            SELECT
+                o.id AS outfit_id, o.name AS outfit_name, o.likes_count, o.created_at,
+                u.id AS creator_id, u.nickname AS creator_nickname,
+                oi.position_x, oi.position_y,
+                g.id AS garment_id, g.name AS garment_name, g.image_url AS garment_image_url
+            FROM (SELECT id FROM outfits ORDER BY likes_count DESC, created_at DESC LIMIT 6) top_o
+            JOIN outfits o       ON o.id = top_o.id
+            JOIN users u         ON u.id = o.user_id
+            JOIN outfit_items oi ON oi.outfit_id = o.id
+            JOIN garments g      ON g.id = oi.garment_id
+            ORDER BY o.likes_count DESC, o.created_at DESC, oi.id
+        `);
 
-        if (user_id) {
-            // Usuario logueado: OBTENER SOLO FAVORITOS
-            query = `
-                SELECT g.* FROM garments g
-                JOIN user_favorites uf ON g.id = uf.garment_id
-                WHERE uf.user_id = ? AND g.category != 'model'
-            `;
-            [garments] = await db.query(query, [user_id]);
-        } else {
-            // Usuario no logueado: Mostrar un catálogo vacío o solo el modelo (opcional)
-            // Aquí elegimos mostrar solo un mensaje en el frontend
-            garments = [];
-        }
+        const [trending] = await db.query(`
+            SELECT id, name, image_url, category, price
+            FROM garments
+            WHERE category <> 'model' AND is_active = 1
+            ORDER BY RAND()
+            LIMIT 8
+        `);
 
-        res.render('tester', {
-            title: 'Probador de Outfits',
-            garments: garments, // Contendrá solo los favoritos (o vacío)
-            user: req.session.user
+        const [[stats]] = await db.query(`
+            SELECT
+                (SELECT COUNT(*) FROM garments WHERE category <> 'model') AS garments,
+                (SELECT COUNT(*) FROM outfits) AS outfits,
+                (SELECT COUNT(*) FROM users) AS creators
+        `);
+
+        res.render('home', {
+            title: 'Viste la audacia',
+            isHome: true,
+            topOutfits: groupOutfitRows(outfitRows),
+            trending,
+            stats
         });
-
     } catch (error) {
-        console.error('Error al cargar la página principal:', error);
-        res.render('index', { error: 'Error al cargar el catálogo.' });
+        console.error('Error al cargar el inicio:', error.message);
+        res.render('home', {
+            title: 'Viste la audacia',
+            isHome: true,
+            topOutfits: [],
+            trending: [],
+            dbError: true
+        });
     }
 };
 
-// controllers/index.controller.js (MODIFICAR renderShop para filtros)
-
+/**
+ * Catálogo con filtro por categoría, búsqueda y ordenamiento.
+ */
 indexController.renderShop = async (req, res) => {
-    const user_id = req.session.user ? req.session.user.id : null;
-    // Capturar los parámetros de consulta de la URL (query string)
-    const { category, sort_by } = req.query;
+    const userId = req.session.user ? req.session.user.id : null;
+    const category = CATEGORIES.includes(req.query.category) ? req.query.category : 'all';
+    const sortBy = ['likes', 'usage', 'price_asc', 'price_desc'].includes(req.query.sort_by) ? req.query.sort_by : 'default';
+    const q = (req.query.q || '').trim().slice(0, 60);
+
+    const where = ["g.category <> 'model'", 'g.is_active = 1'];
+    const params = [userId];
+    if (category !== 'all') {
+        where.push('g.category = ?');
+        params.push(category);
+    }
+    if (q) {
+        where.push('g.name LIKE ?');
+        params.push(`%${q.replace(/[%_\\]/g, '\\$&')}%`);
+    }
+
+    const orderBy = {
+        likes: 'total_favorites DESC, g.name',
+        price_asc: 'g.price ASC, g.name',
+        price_desc: 'g.price DESC, g.name',
+        usage: 'total_usage DESC, g.name',
+        default: 'g.name'
+    }[sortBy];
 
     try {
-        // --- 1. Construcción Dinámica de la Consulta ---
-        let whereClause = "WHERE g.category != 'model'";
-        let orderClause = "ORDER BY g.category, g.name";
-        let queryParams = [user_id];
-
-        // 1.1 Filtro por Categoría
-        if (category && category !== 'all') {
-            whereClause += " AND g.category = ?";
-            queryParams.push(category);
-        }
-
-        // 1.2 Ordenamiento
-        if (sort_by === 'likes') {
-            orderClause = "ORDER BY (SELECT COUNT(*) FROM user_favorites WHERE garment_id = g.id) DESC, g.name";
-        } else if (sort_by === 'usage') {
-            orderClause = "ORDER BY (SELECT COUNT(*) FROM outfit_items WHERE garment_id = g.id) DESC, g.name";
-        } // Si es 'default' o no se especifica, usa el orden alfabético
-
-        // --- 2. Consulta Final ---
         const [garments] = await db.query(`
-            SELECT 
-                g.id, g.name, g.category, g.image_url,
+            SELECT
+                g.id, g.name, g.category, g.image_url, g.price,
+                (SELECT COALESCE(SUM(stock), 0) FROM garment_sizes s WHERE s.garment_id = g.id) AS total_stock,
                 CASE WHEN uf.user_id IS NOT NULL THEN 1 ELSE 0 END AS is_favorite,
-                (SELECT COUNT(*) FROM user_favorites WHERE garment_id = g.id) AS total_favorites,
-                (SELECT COUNT(*) FROM outfit_items WHERE garment_id = g.id) AS total_usage
+                (SELECT COUNT(*) FROM user_favorites f WHERE f.garment_id = g.id) AS total_favorites,
+                (SELECT COUNT(*) FROM outfit_items i WHERE i.garment_id = g.id) AS total_usage
             FROM garments g
-            LEFT JOIN user_favorites uf ON g.id = uf.garment_id AND uf.user_id = ?
-            ${whereClause}
-            ${orderClause}
-        `, queryParams);
+            LEFT JOIN user_favorites uf ON uf.garment_id = g.id AND uf.user_id = ?
+            WHERE ${where.join(' AND ')}
+            ORDER BY ${orderBy}
+        `, params);
 
-        // --- 3. Agrupación (Solo para la vista, si se requiere) ---
-        // Para los filtros, es mejor enviar la lista plana y procesarla en la vista.
+        const [counts] = await db.query(`
+            SELECT category, COUNT(*) AS total
+            FROM garments WHERE category <> 'model'
+            GROUP BY category
+        `);
+        const countMap = Object.fromEntries(counts.map(c => [c.category, Number(c.total)]));
+        const totalAll = counts.reduce((sum, c) => sum + Number(c.total), 0);
+
+        const filters = [
+            { value: 'all', label: 'Todo', count: totalAll },
+            { value: 'top', label: 'Parte superior', count: countMap.top || 0 },
+            { value: 'bottom', label: 'Parte inferior', count: countMap.bottom || 0 },
+            { value: 'shoes', label: 'Calzado', count: countMap.shoes || 0 }
+        ];
+        if (countMap.accessory) filters.push({ value: 'accessory', label: 'Accesorios', count: countMap.accessory });
 
         res.render('shop', {
-            title: 'Eros Wear | Catálogo',
-            user: req.session.user,
-            garments: garments, // Enviamos la lista plana y filtrada
-
-            // Parámetros para mantener el estado del filtro en la UI
-            currentCategory: category || 'all',
-            currentSort: sort_by || 'default'
+            title: 'Catálogo',
+            garments,
+            filters,
+            currentCategory: category,
+            currentSort: sortBy,
+            q,
+            resultCount: garments.length
         });
     } catch (error) {
-        console.error('Error al cargar el catálogo de la tienda:', error);
-        res.render('shop', { error: 'Error al cargar el catálogo de prendas' });
+        console.error('Error al cargar el catálogo:', error.message);
+        res.render('shop', { title: 'Catálogo', garments: [], filters: [], dbError: true });
+    }
+};
+
+/**
+ * Probador: muestra las prendas que el usuario agregó desde el catálogo.
+ */
+indexController.renderTester = async (req, res) => {
+    if (!req.session.user) {
+        return res.render('tester', { title: 'Probador', garments: [] });
+    }
+    try {
+        const [garments] = await db.query(`
+            SELECT g.id, g.name, g.category, g.image_url, g.price
+            FROM garments g
+            JOIN user_favorites uf ON uf.garment_id = g.id
+            WHERE uf.user_id = ? AND g.category <> 'model'
+            ORDER BY FIELD(g.category, 'top', 'bottom', 'shoes', 'accessory'), g.name
+        `, [req.session.user.id]);
+
+        res.render('tester', { title: 'Probador', garments, isStudio: true });
+    } catch (error) {
+        console.error('Error al cargar el probador:', error.message);
+        res.render('tester', { title: 'Probador', garments: [], dbError: true });
+    }
+};
+
+indexController.addFavoriteGarment = async (req, res) => {
+    const garmentId = parseInt(req.params.garment_id, 10);
+    if (!Number.isInteger(garmentId)) {
+        return res.status(400).json({ success: false, message: 'Prenda inválida.' });
+    }
+    try {
+        await db.query(`
+            INSERT INTO user_favorites (user_id, garment_id)
+            VALUES (?, ?)
+            ON DUPLICATE KEY UPDATE created_at = created_at
+        `, [req.session.user.id, garmentId]);
+        res.json({ success: true, message: 'Prenda agregada a tu probador.' });
+    } catch (error) {
+        console.error('Error al agregar favorito:', error.message);
+        res.status(500).json({ success: false, message: 'No pudimos agregar la prenda.' });
     }
 };
 
 indexController.removeFavoriteGarment = async (req, res) => {
-    if (!req.session.user) {
-        return res.status(401).json({ success: false, message: 'Usuario no autenticado' });
+    const garmentId = parseInt(req.params.garment_id, 10);
+    if (!Number.isInteger(garmentId)) {
+        return res.status(400).json({ success: false, message: 'Prenda inválida.' });
     }
-
-    const { garment_id } = req.params;
-    const user_id = req.session.user.id;
-
     try {
-        const deleteQuery = `
-            DELETE FROM user_favorites 
-            WHERE user_id = ? AND garment_id = ?;
-        `;
-        const [result] = await db.query(deleteQuery, [user_id, garment_id]);
-
-        if (result.affectedRows === 0) {
-            // Esto sucede si el usuario intenta eliminar algo que ya no existe (un caso de carrera)
-            return res.json({ success: true, action: 'removed', message: 'Prenda no encontrada, pero el catálogo está limpio' });
-        }
-
-        return res.json({ success: true, action: 'removed', message: 'Prenda eliminada de tu catálogo' });
-
+        await db.query(
+            'DELETE FROM user_favorites WHERE user_id = ? AND garment_id = ?',
+            [req.session.user.id, garmentId]
+        );
+        res.json({ success: true, message: 'Prenda quitada de tu probador.' });
     } catch (error) {
-        console.error('Error al eliminar favorito:', error);
-        return res.status(500).json({ success: false, message: 'Error interno del servidor' });
+        console.error('Error al quitar favorito:', error.message);
+        res.status(500).json({ success: false, message: 'No pudimos quitar la prenda.' });
     }
 };
-
-
-
-// controllers/index.controller.js (AGREGAR addFavoriteGarment)
-
-indexController.addFavoriteGarment = async (req, res) => {
-    if (!req.session.user) {
-        return res.status(401).json({ success: false, message: 'Usuario no autenticado' });
-    }
-
-    const { garment_id } = req.params;
-    const user_id = req.session.user.id;
-    let conn;
-
-    try {
-        // 1. Intentar insertar el favorito
-        // ON DUPLICATE KEY UPDATE simplemente evita un error si el usuario ya lo tenía como favorito
-        const insertQuery = `
-            INSERT INTO user_favorites (user_id, garment_id)
-            VALUES (?, ?)
-            ON DUPLICATE KEY UPDATE created_at = created_at;
-        `;
-        await db.query(insertQuery, [user_id, garment_id]);
-
-        return res.json({ success: true, message: 'Prenda agregada a tu lista de creador' });
-
-    } catch (error) {
-        console.error('Error al agregar prenda favorita:', error);
-        return res.status(500).json({ success: false, message: 'Error interno del servidor' });
-    }
-};
-
-
-
-
-indexController.renderHome = async (req, res) => {
-    let conn;
-    try {
-        // Consulta para obtener el TOP 5 de outfits por likes, incluyendo todos los items y el creador
-        const [outfitsData] = await db.query(`
-            SELECT 
-                o.id AS outfit_id,
-                o.name AS outfit_name,
-                o.likes_count,
-                u.nickname AS creator_nickname,
-                oi.position_x,
-                oi.position_y,
-                g.image_url AS garment_image_url
-            FROM outfits o
-            JOIN users u ON o.user_id = u.id
-            JOIN outfit_items oi ON o.id = oi.outfit_id
-            JOIN garments g ON oi.garment_id = g.id
-            ORDER BY o.likes_count DESC
-            LIMIT 6
-        `);
-
-        // CONSULTA NUEVA: Obtener 6 prendas aleatorias (excluyendo el modelo)
-        const [randomGarments] = await db.query(`
-            SELECT id, name, image_url, category 
-            FROM garments 
-            WHERE category != 'model' 
-            ORDER BY RAND() 
-            LIMIT 6
-        `);
-
-        // Agrupar los items por outfit_id (lógica idéntica a renderGallery)
-        const groupedOutfits = outfitsData.reduce((acc, row) => {
-            if (!acc[row.outfit_id]) {
-                acc[row.outfit_id] = {
-                    id: row.outfit_id,
-                    name: row.outfit_name,
-                    likesCount: row.likes_count,
-                    creator: row.creator_nickname,
-                    items: []
-                };
-            }
-            acc[row.outfit_id].items.push({
-                image_url: row.garment_image_url,
-                x: row.position_x,
-                y: row.position_y
-            });
-            return acc;
-        }, {});
-
-        const topOutfits = Object.values(groupedOutfits);
-
-        // 1. Renderizado Exitoso (Respuesta 1)
-        res.render('home', {
-            title: 'Eros Wear | Atrevimiento y Elegancia',
-            user: req.session.user,
-            topOutfits: topOutfits,
-            randomGarments: randomGarments, // <-- PASAMOS LAS PRENDAS ALEATORIAS
-            error: null
-        });
-        // Log de Sesión de Usuario (¡NUEVO!)
-        if (req.session.user) {
-            console.log(`[SESIÓN]: Usuario autenticado. Nombre: ${req.session.user.nickname}, Email: ${req.session.user.email}`);
-        } else {
-            console.log('[SESIÓN]: Usuario no autenticado. Invitado visitando el sitio.');
-        }
-         // <--- ¡LA SOLUCIÓN! TERMINA LA EJECUCIÓN AQUÍ.
-
-    } catch (error) {
-        // 2. Este catch ya no intentará enviar la respuesta si el renderizado anterior fue exitoso
-        console.error('Error al cargar top outfits para Home:', error);
-
-        // Sólo renderizamos el error si la respuesta aún no ha sido enviada
-        if (!res.headersSent) {
-            res.render('home', {
-                error: 'Error al cargar los diseños destacados'
-            });
-        }
-    } finally {
-        if (conn) conn.release();
-    }
-};
-
-
-
-
 
 /**
- * Renderiza la lista de usuarios registrados (Visitantes).
+ * Comunidad: creadores ordenados por recientes o por likes acumulados.
  */
 indexController.renderVisitors = async (req, res) => {
-    let conn;
+    const sortBy = req.query.sort_by === 'likes' ? 'likes' : 'newest';
+    const orderClause = sortBy === 'likes'
+        ? 'ORDER BY total_likes DESC, u.created_at DESC'
+        : 'ORDER BY u.created_at DESC';
+
     try {
-        conn = await db.getConnection();
-
-        // 1. Capturar el parámetro de ordenamiento
-        const { sort_by } = req.query;
-
-        // 2. Consulta SQL con Cálculo de Likes Totales
-        // Utilizamos LEFT JOIN y SUM para contar los likes de todos los outfits de cada usuario.
-        let query = `
+        const [creators] = await db.query(`
             SELECT
-                u.id,
-                u.nickname,
-                u.created_at,
-                COALESCE(SUM(o.likes_count), 0) AS total_likes
+                u.id, u.nickname, u.created_at,
+                COALESCE(SUM(o.likes_count), 0) AS total_likes,
+                COUNT(o.id) AS total_outfits
             FROM users u
-            LEFT JOIN outfits o ON u.id = o.user_id
+            LEFT JOIN outfits o ON o.user_id = u.id
             GROUP BY u.id, u.nickname, u.created_at
-        `;
+            ${orderClause}
+        `);
 
-        // 3. Implementar la Cláusula de Ordenamiento
-        let orderClause = "ORDER BY u.created_at DESC"; // Default: Más recientes
-
-        if (sort_by === 'likes') {
-            // Ordenar por total_likes (Descendente)
-            orderClause = "ORDER BY total_likes DESC, u.created_at DESC";
-        } else if (sort_by === 'newest') {
-            orderClause = "ORDER BY u.created_at DESC";
-        }
-
-        query += orderClause;
-
-        const [creatorsData] = await conn.query(query);
-
-        res.render('visitors', {
-            title: 'Nuestros Creadores',
-            user: req.session.user,
-            visitors: creatorsData, // Array de creadores con 'total_likes'
-            currentSort: sort_by || 'newest'
-        });
-
+        res.render('visitors', { title: 'Comunidad', visitors: creators, currentSort: sortBy });
     } catch (error) {
-        console.error('Error al cargar la lista de creadores:', error);
-        res.render('visitors', { error: 'Error al cargar los creadores.' });
-    } finally {
-        if (conn) conn.release();
+        console.error('Error al cargar la comunidad:', error.message);
+        res.render('visitors', { title: 'Comunidad', visitors: [], dbError: true });
     }
 };
-
-/**
- * Función para obtener consejos de estilo del modelo GPT-4 mini.
- */
-/**
- * Función para manejar la conversación general de estilo con el modelo GPT-4 mini.
- */
-indexController.handleStyleChat = async (req, res) => {
-    const { message } = req.body;
-
-    if (!message) {
-        return res.status(400).json({ success: false, message: 'El mensaje no puede estar vacío.' });
-    }
-
-    // 1. Definir el System Prompt (Personalidad de la Marca)
-    // Se enfatiza el conocimiento general de estilo, color y las tendencias de Eros Wear.
-    const systemPrompt = `Eres el Asesor de Estilo AI de Eros Wear. Tu rol es guiar al usuario en combinaciones de ropa, teoría del color y consejos de moda. Eres una marca de diseño audaz, con corazón mexicano y enfocas tu estilo en fusionar elegancia clásica con street wear. Tu tono debe ser audaz, culto, directo y enfocarte en el estilo de Eros Wear. Mantén las respuestas en español y concisas.`;
-
-    try {
-        // 2. Llamar a la API de OpenAI
-        const response = await openai.chat.completions.create({
-            model: "gpt-4o-mini",
-            messages: [
-                { role: "system", content: systemPrompt },
-                { role: "user", content: message } // Usamos el mensaje del usuario directamente
-            ],
-            max_tokens: 300,
-        });
-
-        const advice = response.choices[0].message.content;
-
-        res.json({ success: true, advice: advice });
-
-    } catch (error) {
-        console.error('Error al llamar a la API de OpenAI:', error);
-        res.status(500).json({ success: false, message: 'Fallo al conectar con el Asesor de Estilo AI. (Verifica tu API Key o saldo).' });
-    }
-};
-
 
 module.exports = indexController;
