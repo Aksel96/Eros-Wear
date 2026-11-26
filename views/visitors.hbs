@@ -1,46 +1,42 @@
 <section class="page-hero grain">
-    <div class="hero-bg-word" aria-hidden="true">CREW</div>
-    <div class="container position-relative" style="z-index: 2;">
-        <span class="eyebrow">Comunidad</span>
-        <h1>Los <span class="outline">creadores</span></h1>
-        <p>Las personas detrás de cada look. Descubre quién está marcando tendencia en Eros Wear.</p>
+    <div class="hero-bg-word" aria-hidden="true" data-parallax="-0.1">CREW</div>
+    <div class="wrap">
+        <span class="eyebrow" data-hero style="--h:0">Comunidad</span>
+        <h1 data-hero style="--h:1">Los <span class="outline">creadores</span></h1>
+        <p data-hero style="--h:2">Las personas detrás de cada look. Descubre quién está marcando tendencia en Eros Wear.</p>
     </div>
 </section>
 
-<section class="pb-5">
-    <div class="container">
-        <form method="GET" action="/visitors" class="toolbar">
+<section class="section" style="padding-top:0">
+    <div class="wrap">
+        <div class="toolbar">
             <div class="chips">
                 <a class="chip {{#if (eq currentSort 'newest')}}active{{/if}}" href="/visitors?sort_by=newest">Nuevos miembros</a>
                 <a class="chip {{#if (eq currentSort 'likes')}}active{{/if}}" href="/visitors?sort_by=likes">Ranking por likes</a>
             </div>
-            <div class="toolbar-right">
-                <span class="small text-muted px-2">{{visitors.length}} creadores</span>
-            </div>
-        </form>
+            <div class="toolbar-right"><span class="muted-note">{{visitors.length}} creadores</span></div>
+        </div>
 
         {{#if dbError}}
-            <div class="db-alert mt-4">No pudimos cargar la comunidad. Revisa la conexión con la base de datos.</div>
+            <div class="db-alert mt-3">No pudimos cargar la comunidad. Revisa la conexión con la base de datos.</div>
         {{/if}}
 
-        <div class="mt-5">
+        <div class="mt-3">
             {{#if visitors}}
-                <div class="row g-4">
+                <div class="grid grid-creators" data-stagger>
                     {{#each visitors}}
-                        <div class="col-sm-6 col-lg-4 col-xl-3">
-                            <article class="creator-card {{#if (eq ../currentSort 'likes')}}{{#if @first}}top-1{{/if}}{{/if}}">
-                                {{#if (eq ../currentSort 'likes')}}<span class="rank-num">{{pad (add @index 1)}}</span>{{/if}}
-                                <span class="avatar avatar-lg">{{initial nickname}}</span>
-                                <div>
-                                    <h3>{{nickname}}</h3>
-                                    <span class="creator-since">Miembro desde {{memberSince created_at}}</span>
-                                </div>
-                                <div class="creator-stats">
-                                    <div><strong>{{total_likes}}</strong><span>Likes</span></div>
-                                    <div><strong>{{total_outfits}}</strong><span>Outfits</span></div>
-                                </div>
-                            </article>
-                        </div>
+                        <article class="creator-card {{#if (eq ../currentSort 'likes')}}{{#if @first}}top-1{{/if}}{{/if}}" data-reveal="up" style="--i:{{@index}}">
+                            {{#if (eq ../currentSort 'likes')}}<span class="rank-num">{{pad (add @index 1)}}</span>{{/if}}
+                            <span class="avatar avatar-lg">{{initial nickname}}</span>
+                            <div>
+                                <h3>{{nickname}}</h3>
+                                <span class="creator-since">Miembro desde {{memberSince created_at}}</span>
+                            </div>
+                            <div class="creator-stats">
+                                <div><strong>{{total_likes}}</strong><span>Likes</span></div>
+                                <div><strong>{{total_outfits}}</strong><span>Outfits</span></div>
+                            </div>
+                        </article>
                     {{/each}}
                 </div>
             {{else}}
@@ -48,7 +44,7 @@
                     <div class="empty-icon">{{{icon 'user'}}}</div>
                     <h3>Aún no hay creadores</h3>
                     <p>Crea tu cuenta y sé parte de la comunidad desde el primer día.</p>
-                    <a href="/register" class="btn-eros">Unirme</a>
+                    <a href="/register" class="btn">Unirme</a>
                 </div>
             {{/if}}
         </div>

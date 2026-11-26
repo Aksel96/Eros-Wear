@@ -1,20 +1,20 @@
-<div class="offcanvas offcanvas-end cart-drawer" tabindex="-1" id="cartDrawer" aria-labelledby="cartTitle">
-    <div class="offcanvas-header">
+<aside class="drawer" id="cartDrawer" role="dialog" aria-modal="true" aria-labelledby="cartTitle" aria-hidden="true">
+    <div class="drawer-head">
         <h2 id="cartTitle">Tu carrito</h2>
-        <button type="button" class="icon-btn" data-bs-dismiss="offcanvas" aria-label="Cerrar carrito">{{{icon 'close'}}}</button>
+        <button type="button" class="icon-btn" data-close-layers aria-label="Cerrar carrito">{{{icon 'close'}}}</button>
     </div>
-    <div class="offcanvas-body" id="cartBody"></div>
-    <div class="cart-footer d-none" id="cartFooter">
+    <div class="drawer-body" id="cartBody"></div>
+    <div class="cart-footer is-hidden" id="cartFooter">
         <div class="cart-total"><span>Total estimado</span><strong id="cartTotal">$0</strong></div>
         <p class="cart-note">Precios en MXN con IVA incluido. No se cobra en línea: enviamos tu pedido por WhatsApp y coordinamos pago y entrega contigo.</p>
-        <div class="field mb-2">
+        <div class="field">
             <label for="cartName">Tu nombre</label>
-            <input type="text" id="cartName" class="form-control" maxlength="100" autocomplete="name" data-default="{{user.nickname}}" placeholder="¿Cómo te llamamos?">
+            <input type="text" id="cartName" class="input" maxlength="100" autocomplete="name" data-default="{{user.nickname}}" placeholder="¿Cómo te llamamos?">
         </div>
-        <div class="field mb-3">
+        <div class="field">
             <label for="cartNotes">Notas (opcional)</label>
-            <textarea id="cartNotes" class="form-control" rows="2" maxlength="500" placeholder="Colonia o ciudad para la entrega, dudas, etc."></textarea>
+            <textarea id="cartNotes" class="input" rows="2" maxlength="500" placeholder="Colonia o ciudad para la entrega, dudas, etc."></textarea>
         </div>
-        <button type="button" class="btn-eros w-100" id="cartSend">{{{icon 'whatsapp'}}} Enviar pedido por WhatsApp</button>
+        <button type="button" class="btn btn-block" id="cartSend">{{{icon 'whatsapp'}}} Enviar pedido por WhatsApp</button>
     </div>
-</div>
+</aside>

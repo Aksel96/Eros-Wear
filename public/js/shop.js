@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
         btn.addEventListener('click', async () => {
             const isFavorite = btn.dataset.isFavorite === '1';
             const id = btn.dataset.garmentId;
-            const name = btn.closest('.position-relative').querySelector('.product-name').textContent.trim();
+            const name = btn.closest('.product-wrap').querySelector('.product-name').textContent.trim();
             btn.disabled = true;
             try {
                 await ErosUI.request(`/shop/${isFavorite ? 'unfavorite' : 'favorite'}/${id}`);

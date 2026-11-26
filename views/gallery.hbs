@@ -1,14 +1,14 @@
 <section class="page-hero grain">
-    <div class="hero-bg-word" aria-hidden="true">LOOKS</div>
-    <div class="container position-relative" style="z-index: 2;">
-        <span class="eyebrow">Galería</span>
-        <h1>{{#if mine}}Mis <span class="outline">outfits</span>{{else}}Looks de la <span class="outline">comunidad</span>{{/if}}</h1>
-        <p>{{#if mine}}Todo lo que has creado en el probador. Edítalo cuando quieras.{{else}}Combinaciones creadas por la comunidad Eros. Dale like a tus favoritas o úsalas de inspiración.{{/if}}</p>
+    <div class="hero-bg-word" aria-hidden="true" data-parallax="-0.1">LOOKS</div>
+    <div class="wrap">
+        <span class="eyebrow" data-hero style="--h:0">Galería</span>
+        <h1 data-hero style="--h:1">{{#if mine}}Mis <span class="outline">outfits</span>{{else}}Looks de la <span class="outline">comunidad</span>{{/if}}</h1>
+        <p data-hero style="--h:2">{{#if mine}}Todo lo que has creado en el probador. Edítalo cuando quieras.{{else}}Combinaciones creadas por la comunidad Eros. Dale like a tus favoritas o úsalas de inspiración.{{/if}}</p>
     </div>
 </section>
 
-<section class="pb-5">
-    <div class="container">
+<section class="section" style="padding-top:0">
+    <div class="wrap">
         <form method="GET" action="/gallery" class="toolbar">
             <div class="chips">
                 <a class="chip {{#unless mine}}active{{/unless}}" href="/gallery?sort_by={{currentSort}}">Toda la comunidad</a>
@@ -18,68 +18,66 @@
             </div>
             <div class="toolbar-right">
                 {{#if mine}}<input type="hidden" name="mine" value="1">{{/if}}
-                <select name="sort_by" class="select-eros" aria-label="Ordenar" onchange="this.form.submit()">
+                <select name="sort_by" class="select select-sm" aria-label="Ordenar" onchange="this.form.submit()" style="width:auto">
                     <option value="newest" {{#if (eq currentSort 'newest')}}selected{{/if}}>Más recientes</option>
                     <option value="likes" {{#if (eq currentSort 'likes')}}selected{{/if}}>Más likes</option>
                 </select>
-                {{#if user}}<a href="/tester" class="btn-eros btn-sm-eros">{{{icon 'plus'}}} Nuevo outfit</a>{{/if}}
+                {{#if user}}<a href="/tester" class="btn btn-sm">{{{icon 'plus'}}} Nuevo outfit</a>{{/if}}
             </div>
         </form>
 
         {{#if dbError}}
-            <div class="db-alert mt-4">No pudimos cargar la galería. Revisa la conexión con la base de datos.</div>
+            <div class="db-alert mt-3">No pudimos cargar la galería. Revisa la conexión con la base de datos.</div>
         {{/if}}
 
-        <div class="mt-5">
+        <div class="mt-3">
             {{#if outfits}}
-                <div class="row g-4">
+                <div class="grid grid-cards" data-stagger>
                     {{#each outfits}}
-                        <div class="col-sm-6 col-lg-4">
-                            <article class="outfit-card">
-                                <div class="outfit-stage">
-                                    <div class="outfit-render" data-outfit-items="{{json items}}">
-                                        <div class="outfit-loading">Cargando</div>
+                        <article class="outfit-card" data-reveal="up" style="--i:{{@index}}">
+                            <div class="outfit-stage">
+                                <div class="outfit-render" data-outfit-items="{{json items}}">
+                                    <div class="outfit-loading">Cargando</div>
+                                </div>
+                            </div>
+                            <div class="outfit-body">
+                                <div>
+                                    <h3>{{name}}</h3>
+                                    <div class="outfit-creator mt-1">
+                                        <span class="avatar">{{initial creator}}</span>
+                                        <span>{{creator}}</span>
+                                        <span class="outfit-date">· {{dateFormat createdAt}}</span>
                                     </div>
                                 </div>
-                                <div class="outfit-body">
-                                    <div>
-                                        <h3>{{name}}</h3>
-                                        <div class="outfit-creator mt-2">
-                                            <span class="avatar">{{initial creator}}</span>
-                                            <span>{{creator}}</span>
-                                            <span class="outfit-date">· {{dateFormat createdAt}}</span>
-                                        </div>
-                                    </div>
-                                    <button type="button" class="btn-ink btn-sm-eros w-100" data-add-look="{{json (lookIds items)}}">{{{icon 'bag'}}} Comprar este look</button>
-                                    <div class="outfit-footer">
-                                        {{#if ../user}}
-                                            <button type="button" class="like-btn {{#if isLikedByUser}}is-liked{{/if}}"
-                                                    data-outfit-id="{{id}}" aria-pressed="{{#if isLikedByUser}}true{{else}}false{{/if}}"
-                                                    aria-label="Me gusta {{name}}">
-                                                {{{icon 'heart' filled=true}}} <span class="like-count">{{likesCount}}</span>
-                                            </button>
-                                        {{else}}
-                                            <a href="/login" class="like-btn" title="Inicia sesión para dar like">
-                                                {{{icon 'heart' filled=true}}} <span class="like-count">{{likesCount}}</span>
-                                            </a>
-                                        {{/if}}
+                                <button type="button" class="btn btn-ink btn-sm btn-block" data-add-look="{{json (lookIds items)}}">{{{icon 'bag'}}} Comprar este look</button>
+                                <div class="outfit-footer">
+                                    {{#if ../user}}
+                                        <button type="button" class="like-btn {{#if isLikedByUser}}is-liked{{/if}}"
+                                                data-outfit-id="{{id}}" aria-pressed="{{#if isLikedByUser}}true{{else}}false{{/if}}"
+                                                aria-label="Me gusta {{name}}">
+                                            {{{icon 'heart'}}} <span class="like-count">{{likesCount}}</span>
+                                        </button>
+                                    {{else}}
+                                        <a href="/login" class="like-btn" title="Inicia sesión para dar like">
+                                            {{{icon 'heart'}}} <span class="like-count">{{likesCount}}</span>
+                                        </a>
+                                    {{/if}}
 
-                                        {{#if ../user}}
-                                            <div class="d-flex gap-2">
-                                                {{#if (isOwner ../user.id creatorId)}}
-                                                    <a href="/tester?edit={{id}}" class="icon-btn" title="Editar" aria-label="Editar {{name}}">{{{icon 'edit'}}}</a>
-                                                    <form action="/outfits/delete/{{id}}" method="POST" data-confirm="Se eliminará “{{name}}” de la galería. Esta acción no se puede deshacer.">
-                                                        <button type="submit" class="icon-btn danger" title="Eliminar" aria-label="Eliminar {{name}}">{{{icon 'trash'}}}</button>
-                                                    </form>
-                                                {{else}}
-                                                    <a href="/tester?edit={{id}}" class="icon-btn" title="Usar como inspiración" aria-label="Usar {{name}} como inspiración">{{{icon 'sparkle'}}}</a>
-                                                {{/if}}
-                                            </div>
-                                        {{/if}}
-                                    </div>
+                                    {{#if ../user}}
+                                        <div class="outfit-actions">
+                                            {{#if (isOwner ../user.id creatorId)}}
+                                                <a href="/tester?edit={{id}}" class="icon-btn" title="Editar" aria-label="Editar {{name}}">{{{icon 'edit'}}}</a>
+                                                <form action="/outfits/delete/{{id}}" method="POST" data-confirm="Se eliminará “{{name}}” de la galería. Esta acción no se puede deshacer.">
+                                                    <button type="submit" class="icon-btn danger" title="Eliminar" aria-label="Eliminar {{name}}">{{{icon 'trash'}}}</button>
+                                                </form>
+                                            {{else}}
+                                                <a href="/tester?edit={{id}}" class="icon-btn" title="Usar como inspiración" aria-label="Usar {{name}} como inspiración">{{{icon 'sparkle'}}}</a>
+                                            {{/if}}
+                                        </div>
+                                    {{/if}}
                                 </div>
-                            </article>
-                        </div>
+                            </div>
+                        </article>
                     {{/each}}
                 </div>
             {{else}}
@@ -87,7 +85,7 @@
                     <div class="empty-icon">{{{icon 'layers'}}}</div>
                     <h3>{{#if mine}}Aún no creas outfits{{else}}La galería está vacía{{/if}}</h3>
                     <p>Combina prendas en el probador y guarda tu primer look para verlo aquí.</p>
-                    <a href="/tester" class="btn-eros">Ir al probador</a>
+                    <a href="/tester" class="btn">Ir al probador</a>
                 </div>
             {{/if}}
         </div>

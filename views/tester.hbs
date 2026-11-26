@@ -1,22 +1,54 @@
 <section class="studio">
-    <div class="container-xl">
+    <div class="wrap">
         {{#if user}}
             <div class="studio-head">
                 <div>
                     <span class="eyebrow">Probador</span>
                     <h1>Tu <span class="outline">estudio</span></h1>
                 </div>
-                <div class="d-flex flex-wrap gap-2">
-                    <a href="/shop" class="btn-light-ghost btn-sm-eros">{{{icon 'plus'}}} Agregar prendas</a>
-                    <a href="/gallery?mine=1" class="btn-light-ghost btn-sm-eros">{{{icon 'grid'}}} Mis outfits</a>
+                <div class="cluster">
+                    <a href="/shop" class="btn btn-light btn-sm">{{{icon 'plus'}}} Agregar prendas</a>
+                    <a href="/gallery?mine=1" class="btn btn-light btn-sm">{{{icon 'grid'}}} Mis outfits</a>
                 </div>
             </div>
 
             {{#if dbError}}
-                <div class="db-alert mb-3">No pudimos cargar tus prendas. Revisa la conexión con la base de datos.</div>
+                <div class="db-alert mb-2">No pudimos cargar tus prendas. Revisa la conexión con la base de datos.</div>
             {{/if}}
 
             <div class="studio-grid" id="studio" data-user-id="{{user.id}}">
+                {{!-- Lienzo --}}
+                <div class="canvas-wrap">
+                    <div class="canvas-toolbar">
+                        <div class="canvas-name">
+                            <input type="text" id="outfitName" maxlength="100" placeholder="Nombra tu outfit" aria-label="Nombre del outfit">
+                            <span class="mode-badge is-hidden" id="modeBadge">Editando</span>
+                        </div>
+                    </div>
+
+                    <div id="outfit-canvas" aria-label="Lienzo del outfit">
+                        <div class="canvas-empty">
+                            {{{icon 'layers'}}}
+                            <strong>Tu lienzo está listo</strong>
+                            <span>Arrastra una prenda aquí o tócala para agregarla</span>
+                        </div>
+                    </div>
+
+                    <div class="canvas-actions">
+                        <div class="left">
+                            <button type="button" class="icon-btn" id="bringFront" title="Traer al frente" aria-label="Traer al frente" disabled>{{{icon 'front'}}}</button>
+                            <button type="button" class="icon-btn" id="removeItem" title="Quitar prenda seleccionada" aria-label="Quitar prenda seleccionada" disabled>{{{icon 'trash'}}}</button>
+                            <button type="button" class="icon-btn" id="clearCanvas" title="Limpiar lienzo" aria-label="Limpiar lienzo">{{{icon 'undo'}}}</button>
+                        </div>
+                        <button type="button" class="btn" id="saveOutfit">{{{icon 'save'}}} <span id="saveLabel">Guardar outfit</span></button>
+                    </div>
+
+                    <div class="look-total">
+                        <div><span>Total del look</span><strong id="lookTotal">$0</strong></div>
+                        <button type="button" class="btn btn-rose btn-sm" id="addLookToCart" disabled>{{{icon 'bag'}}} Agregar look al carrito</button>
+                    </div>
+                </div>
+
                 {{!-- Prendas del usuario --}}
                 <aside class="studio-panel catalog">
                     <h2>Tus prendas <span class="count">{{garments.length}}</span></h2>
@@ -33,44 +65,12 @@
                             {{/each}}
                         </div>
                     {{else}}
-                        <div class="text-center py-4 px-2">
-                            <p class="text-soft small mb-3">Todavía no tienes prendas. Agrégalas desde el catálogo para combinarlas aquí.</p>
-                            <a href="/shop" class="btn-rose btn-sm-eros">Ir al catálogo</a>
+                        <div class="center" style="padding:1.5rem .5rem">
+                            <p class="text-soft mb-2" style="font-size:.9rem">Todavía no tienes prendas. Agrégalas desde el catálogo para combinarlas aquí.</p>
+                            <a href="/shop" class="btn btn-rose btn-sm">Ir al catálogo</a>
                         </div>
                     {{/if}}
                 </aside>
-
-                {{!-- Lienzo --}}
-                <div class="canvas-wrap">
-                    <div class="canvas-toolbar">
-                        <div class="canvas-name">
-                            <input type="text" id="outfitName" maxlength="100" placeholder="Nombra tu outfit" aria-label="Nombre del outfit">
-                            <span class="mode-badge d-none" id="modeBadge">Editando</span>
-                        </div>
-                    </div>
-
-                    <div id="outfit-canvas" aria-label="Lienzo del outfit">
-                        <div class="canvas-empty">
-                            {{{icon 'layers'}}}
-                            <strong>Tu lienzo está listo</strong>
-                            <span>Arrastra una prenda aquí o tócala para agregarla</span>
-                        </div>
-                    </div>
-
-                    <div class="look-total">
-                        <div><span>Total del look</span><strong id="lookTotal">$0</strong></div>
-                        <button type="button" class="btn-rose btn-sm-eros btn-look" id="addLookToCart" disabled>{{{icon 'bag'}}} Agregar look al carrito</button>
-                    </div>
-
-                    <div class="canvas-actions">
-                        <div class="left">
-                            <button type="button" class="icon-btn" id="bringFront" title="Traer al frente" aria-label="Traer al frente" disabled>{{{icon 'front'}}}</button>
-                            <button type="button" class="icon-btn" id="removeItem" title="Quitar prenda seleccionada" aria-label="Quitar prenda seleccionada" disabled>{{{icon 'trash'}}}</button>
-                            <button type="button" class="icon-btn" id="clearCanvas" title="Limpiar lienzo" aria-label="Limpiar lienzo">{{{icon 'undo'}}}</button>
-                        </div>
-                        <button type="button" class="btn-eros" id="saveOutfit">{{{icon 'save'}}} <span id="saveLabel">Guardar outfit</span></button>
-                    </div>
-                </div>
 
                 {{!-- Ayuda --}}
                 <aside class="studio-aside-right">
@@ -87,13 +87,13 @@
                 </aside>
             </div>
         {{else}}
-            <div class="gate">
+            <div class="gate" data-reveal="up">
                 <span class="eyebrow">Probador</span>
-                <h1 class="mt-3">Diseña tu <span class="outline">próximo look</span></h1>
+                <h1 class="mt-2">Diseña tu <span class="outline" style="color:var(--rose-300)">próximo look</span></h1>
                 <p>Crea una cuenta gratis para guardar prendas, combinarlas en el lienzo y compartir tus outfits con la comunidad.</p>
-                <div class="d-flex flex-wrap justify-content-center gap-2">
-                    <a href="/register" class="btn-eros">Crear cuenta</a>
-                    <a href="/login" class="btn-light-ghost">Ya tengo cuenta</a>
+                <div class="cluster middle">
+                    <a href="/register" class="btn">Crear cuenta</a>
+                    <a href="/login" class="btn btn-light">Ya tengo cuenta</a>
                 </div>
             </div>
         {{/if}}
@@ -101,5 +101,5 @@
 </section>
 
 {{#if user}}
-    <script src="/js/outfit-builder.js?v=3"></script>
+    <script src="/js/outfit-builder.js?v=4"></script>
 {{/if}}

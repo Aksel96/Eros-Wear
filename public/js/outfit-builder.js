@@ -38,7 +38,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function setMode(outfitId) {
         currentOutfitId = outfitId;
-        modeBadge.classList.toggle('d-none', !outfitId);
+        modeBadge.classList.toggle('is-hidden', !outfitId);
         saveLabel.textContent = outfitId ? 'Guardar cambios' : 'Guardar outfit';
     }
 

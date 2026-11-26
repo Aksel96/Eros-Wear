@@ -1,0 +1,7 @@
+<nav class="tabbar" aria-label="Navegación móvil">
+    <a href="/" class="{{#if (eq currentPath '/')}}active{{/if}}">{{{icon 'home'}}}Inicio</a>
+    <a href="/shop" class="{{#if (startsWith currentPath '/shop')}}active{{/if}}">{{{icon 'hanger'}}}Catálogo</a>
+    <a href="/tester" class="{{#if (startsWith currentPath '/tester')}}active{{/if}}">{{{icon 'layers'}}}Probador</a>
+    <a href="/gallery" class="{{#if (startsWith currentPath '/gallery')}}active{{/if}}">{{{icon 'sparkle'}}}Galería</a>
+    <button type="button" data-toggle-account aria-haspopup="true" aria-controls="accountMenu">{{{icon 'user'}}}Cuenta</button>
+</nav>

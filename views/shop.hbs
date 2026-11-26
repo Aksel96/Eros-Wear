@@ -1,14 +1,14 @@
 <section class="page-hero grain">
-    <div class="hero-bg-word" aria-hidden="true">SHOP</div>
-    <div class="container position-relative" style="z-index: 2;">
-        <span class="eyebrow">Catálogo oficial</span>
-        <h1>La <span class="outline">colección</span></h1>
-        <p>Piezas que mezclan la sastrería clásica con la actitud de la calle. Elige talla, arma tu carrito y envíanos tu pedido por WhatsApp.</p>
+    <div class="hero-bg-word" aria-hidden="true" data-parallax="-0.1">SHOP</div>
+    <div class="wrap">
+        <span class="eyebrow" data-hero style="--h:0">Catálogo oficial</span>
+        <h1 data-hero style="--h:1">La <span class="outline">colección</span></h1>
+        <p data-hero style="--h:2">Piezas que mezclan la sastrería clásica con la actitud de la calle. Elige talla, arma tu carrito y envíanos tu pedido por WhatsApp.</p>
     </div>
 </section>
 
-<section class="pb-5">
-    <div class="container">
+<section class="section tight-top" style="padding-top:0;padding-bottom:3rem">
+    <div class="wrap">
         <form method="GET" action="/shop" class="toolbar" id="shopFilters">
             <div class="chips" role="group" aria-label="Filtrar por categoría">
                 {{#each filters}}
@@ -24,7 +24,7 @@
                     {{{icon 'search'}}}
                     <input type="search" name="q" value="{{q}}" placeholder="Buscar prenda" aria-label="Buscar prenda">
                 </label>
-                <select name="sort_by" class="select-eros" aria-label="Ordenar" onchange="this.form.submit()">
+                <select name="sort_by" class="select select-sm" aria-label="Ordenar" onchange="this.form.submit()" style="width:auto">
                     <option value="default" {{#if (eq currentSort 'default')}}selected{{/if}}>Nombre (A-Z)</option>
                     <option value="price_asc" {{#if (eq currentSort 'price_asc')}}selected{{/if}}>Precio: menor a mayor</option>
                     <option value="price_desc" {{#if (eq currentSort 'price_desc')}}selected{{/if}}>Precio: mayor a menor</option>
@@ -35,7 +35,7 @@
         </form>
 
         {{#if dbError}}
-            <div class="db-alert mt-4">No pudimos cargar el catálogo. Revisa la conexión con la base de datos.</div>
+            <div class="db-alert mt-3">No pudimos cargar el catálogo. Revisa la conexión con la base de datos.</div>
         {{/if}}
 
         <p class="result-count">
@@ -45,20 +45,17 @@
         </p>
 
         {{#if garments}}
-            <div class="row g-3 g-md-4">
+            <div class="grid grid-products" data-stagger>
                 {{#each garments}}
-                    <div class="col-6 col-md-4 col-xl-3">
-                        <div class="position-relative h-100">
-                            {{> productCard this}}
-                            {{#if ../user}}
-                                <button type="button" class="fav-icon-btn {{#if is_favorite}}is-active{{/if}}" data-garment-id="{{id}}" data-is-favorite="{{is_favorite}}"
-                                        style="position:absolute; right: .8rem; top: .8rem; z-index: 5; background: rgba(255,255,255,.9);"
-                                        title="{{#if is_favorite}}Quitar de mi probador{{else}}Agregar a mi probador{{/if}}"
-                                        aria-label="{{#if is_favorite}}Quitar de mi probador{{else}}Agregar a mi probador{{/if}}" aria-pressed="{{#if is_favorite}}true{{else}}false{{/if}}">
-                                    {{{icon 'hanger'}}}
-                                </button>
-                            {{/if}}
-                        </div>
+                    <div class="product-wrap" data-reveal="up" style="--i:{{@index}}">
+                        {{> productCard this}}
+                        {{#if ../user}}
+                            <button type="button" class="fav-icon-btn {{#if is_favorite}}is-active{{/if}}" data-garment-id="{{id}}" data-is-favorite="{{is_favorite}}"
+                                    title="{{#if is_favorite}}Quitar de mi probador{{else}}Agregar a mi probador{{/if}}"
+                                    aria-label="{{#if is_favorite}}Quitar de mi probador{{else}}Agregar a mi probador{{/if}}" aria-pressed="{{#if is_favorite}}true{{else}}false{{/if}}">
+                                {{{icon 'hanger'}}}
+                            </button>
+                        {{/if}}
                     </div>
                 {{/each}}
             </div>
@@ -67,10 +64,10 @@
                 <div class="empty-icon">{{{icon 'search'}}}</div>
                 <h3>Sin resultados</h3>
                 <p>No encontramos prendas con esos filtros. Prueba con otra categoría o búsqueda.</p>
-                <a href="/shop" class="btn-ghost">Limpiar filtros</a>
+                <a href="/shop" class="btn btn-ghost">Limpiar filtros</a>
             </div>
         {{/if}}
     </div>
 </section>
 
-<script src="/js/shop.js?v=3"></script>
+<script src="/js/shop.js?v=4"></script>
