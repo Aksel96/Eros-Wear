@@ -35,32 +35,32 @@
 
         _dialog({ title, message, okText = 'Aceptar', cancelText = 'Cancelar', danger = false, input = null }) {
             return new Promise(resolve => {
-                const modalEl = document.getElementById('erosDialog');
-                if (!modalEl || !window.bootstrap) {
-                    resolve(input ? window.prompt(message, input.value || '') : window.confirm(message));
+                const dlg = document.getElementById('erosDialog');
+                if (!dlg || typeof dlg.showModal !== 'function') {
+                    resolve(input ? window.prompt(message || title, input.value || '') : window.confirm(message || title));
                     return;
                 }
                 const form = document.getElementById('erosDialogForm');
                 const field = document.getElementById('erosDialogField');
                 const inputEl = document.getElementById('erosDialogInput');
                 const okBtn = document.getElementById('erosDialogOk');
+                const cancelBtn = document.getElementById('erosDialogCancel');
+                const msg = document.getElementById('erosDialogMessage');
 
                 document.getElementById('erosDialogTitle').textContent = title;
-                document.getElementById('erosDialogMessage').textContent = message || '';
-                document.getElementById('erosDialogMessage').classList.toggle('d-none', !message);
-                document.getElementById('erosDialogCancel').textContent = cancelText;
+                msg.textContent = message || '';
+                msg.classList.toggle('is-hidden', !message);
+                cancelBtn.textContent = cancelText;
                 okBtn.textContent = okText;
-                okBtn.style.background = danger ? 'var(--danger)' : '';
-                field.classList.toggle('d-none', !input);
+                okBtn.style.setProperty('--bg', danger ? 'var(--danger)' : '');
+                field.classList.toggle('is-hidden', !input);
                 if (input) {
                     document.getElementById('erosDialogLabel').textContent = input.label || 'Nombre';
                     inputEl.value = input.value || '';
                     inputEl.placeholder = input.placeholder || '';
                 }
 
-                const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
                 let result = input ? null : false;
-
                 const onSubmit = e => {
                     e.preventDefault();
                     if (input) {
@@ -70,20 +70,25 @@
                     } else {
                         result = true;
                     }
-                    modal.hide();
+                    dlg.close();
                 };
-                const onShown = () => { if (input) { inputEl.focus(); inputEl.select(); } else okBtn.focus(); };
-                const onHidden = () => {
+                const onCancel = () => dlg.close();
+                const onClose = () => {
                     form.removeEventListener('submit', onSubmit);
-                    modalEl.removeEventListener('shown.bs.modal', onShown);
-                    modalEl.removeEventListener('hidden.bs.modal', onHidden);
+                    cancelBtn.removeEventListener('click', onCancel);
+                    dlg.removeEventListener('close', onClose);
+                    dlg.removeEventListener('click', onBackdrop);
                     inputEl.classList.remove('is-invalid');
                     resolve(result);
                 };
+                // Un clic sobre el fondo oscuro cierra el diálogo
+                const onBackdrop = e => { if (e.target === dlg) dlg.close(); };
                 form.addEventListener('submit', onSubmit);
-                modalEl.addEventListener('shown.bs.modal', onShown);
-                modalEl.addEventListener('hidden.bs.modal', onHidden);
-                modal.show();
+                cancelBtn.addEventListener('click', onCancel);
+                dlg.addEventListener('close', onClose);
+                dlg.addEventListener('click', onBackdrop);
+                dlg.showModal();
+                if (input) { inputEl.focus(); inputEl.select(); } else okBtn.focus();
             });
         },
 
@@ -179,6 +184,160 @@
     window.renderOutfit = renderOutfit;
 
     // ------------------------------------------------------------------
+    // Capas (menú de cuenta y carrito): una sola a la vez
+    // ------------------------------------------------------------------
+    const layers = {
+        current: null,
+        open(el) {
+            if (this.current && this.current !== el) this.close();
+            this.current = el;
+            el.classList.add('is-open');
+            el.setAttribute('aria-hidden', 'false');
+            const backdrop = document.getElementById('backdrop');
+            backdrop.classList.add('is-open');
+            backdrop.classList.toggle('account', el.id === 'accountMenu');
+            if (el.id !== 'accountMenu' || window.innerWidth < 900) document.body.classList.add('is-locked');
+            window.dispatchEvent(new CustomEvent('eros:layer-open', { detail: el.id }));
+        },
+        close() {
+            if (!this.current) return;
+            this.current.classList.remove('is-open');
+            this.current.setAttribute('aria-hidden', 'true');
+            document.getElementById('backdrop').classList.remove('is-open');
+            document.body.classList.remove('is-locked');
+            this.current = null;
+        }
+    };
+    window.ErosLayers = layers;
+
+    function initChrome() {
+        const header = document.getElementById('siteNav');
+        const progress = document.getElementById('scrollProgress');
+        let lastY = window.scrollY;
+        let ticking = false;
+
+        const onScroll = () => {
+            ticking = false;
+            const y = window.scrollY;
+            const max = document.documentElement.scrollHeight - window.innerHeight;
+            if (progress && max > 0) progress.style.transform = `scaleX(${Math.min(1, y / max)})`;
+            // En móvil la cabecera se oculta al bajar y reaparece al subir
+            const goingDown = y > lastY + 6;
+            const goingUp = y < lastY - 6;
+            if (header && window.innerWidth < 900) {
+                if (goingDown && y > 120) { header.classList.add('is-hidden-up'); document.body.classList.add('header-up'); }
+                else if (goingUp || y < 80) { header.classList.remove('is-hidden-up'); document.body.classList.remove('header-up'); }
+            } else if (header) {
+                header.classList.remove('is-hidden-up');
+                document.body.classList.remove('header-up');
+            }
+            if (Math.abs(y - lastY) > 6) lastY = y;
+        };
+        window.addEventListener('scroll', () => { if (!ticking) { ticking = true; requestAnimationFrame(onScroll); } }, { passive: true });
+        onScroll();
+
+        const menu = document.getElementById('accountMenu');
+        document.querySelectorAll('[data-toggle-account]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                if (!menu) return;
+                if (layers.current === menu) layers.close(); else layers.open(menu);
+            });
+        });
+        document.querySelectorAll('[data-close-layers]').forEach(el => el.addEventListener('click', () => layers.close()));
+        document.addEventListener('keydown', e => { if (e.key === 'Escape') layers.close(); });
+        if (menu) menu.addEventListener('click', e => { if (e.target.closest('a')) layers.close(); });
+    }
+
+    // ------------------------------------------------------------------
+    // Movimiento: aparición al hacer scroll, texto por palabras, parallax y contadores
+    // ------------------------------------------------------------------
+    function initMotion() {
+        const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+        // Texto que aparece palabra por palabra
+        document.querySelectorAll('[data-split]').forEach(el => {
+            let k = 0;
+            const wrap = node => {
+                node.childNodes.forEach(child => {
+                    if (child.nodeType === 3) {
+                        const frag = document.createDocumentFragment();
+                        child.textContent.split(/(\s+)/).forEach(part => {
+                            if (!part) return;
+                            if (/^\s+$/.test(part)) { frag.appendChild(document.createTextNode(' ')); return; }
+                            const w = document.createElement('span');
+                            w.className = 'w';
+                            const inner = document.createElement('span');
+                            inner.textContent = part;
+                            inner.style.setProperty('--k', k++);
+                            w.appendChild(inner);
+                            frag.appendChild(w);
+                        });
+                        child.replaceWith(frag);
+                    } else if (child.nodeType === 1) {
+                        wrap(child);
+                    }
+                });
+            };
+            wrap(el);
+            el.querySelectorAll('.w > span').forEach(s => s.style.transitionDelay = `${Number(s.style.getPropertyValue('--k')) * 38}ms`);
+        });
+
+        // Contadores
+        const countUp = el => {
+            const target = Number(el.dataset.count);
+            if (!Number.isFinite(target) || reduce) return;
+            const start = performance.now();
+            const dur = 1400;
+            const tick = now => {
+                const t = Math.min(1, (now - start) / dur);
+                el.textContent = Math.round(target * (1 - Math.pow(1 - t, 3)));
+                if (t < 1) requestAnimationFrame(tick);
+            };
+            el.textContent = '0';
+            requestAnimationFrame(tick);
+        };
+
+        // Retardo y escalonado
+        document.querySelectorAll('[data-reveal][data-d]').forEach(el => el.style.setProperty('--d', `${el.dataset.d}ms`));
+
+        const targets = document.querySelectorAll('[data-reveal], [data-split]');
+        if ('IntersectionObserver' in window && !reduce) {
+            const io = new IntersectionObserver(entries => {
+                entries.forEach(entry => {
+                    if (!entry.isIntersecting) return;
+                    entry.target.classList.add('in');
+                    entry.target.querySelectorAll('[data-count]').forEach(countUp);
+                    if (entry.target.matches('[data-count]')) countUp(entry.target);
+                    io.unobserve(entry.target);
+                });
+            }, { threshold: 0.12, rootMargin: '0px 0px -8% 0px' });
+            targets.forEach(el => io.observe(el));
+        } else {
+            targets.forEach(el => el.classList.add('in'));
+        }
+
+        // Parallax suave (solo elementos visibles)
+        const par = Array.from(document.querySelectorAll('[data-parallax]'));
+        if (par.length && !reduce) {
+            let ticking = false;
+            const update = () => {
+                ticking = false;
+                const vh = window.innerHeight;
+                par.forEach(el => {
+                    const r = el.getBoundingClientRect();
+                    if (r.bottom < -100 || r.top > vh + 100) return;
+                    const speed = Number(el.dataset.parallax) || 0;
+                    const offset = (r.top + r.height / 2 - vh / 2) * speed;
+                    el.style.transform = `translate3d(0, ${offset.toFixed(1)}px, 0)`;
+                });
+            };
+            window.addEventListener('scroll', () => { if (!ticking) { ticking = true; requestAnimationFrame(update); } }, { passive: true });
+            window.addEventListener('resize', update);
+            update();
+        }
+    }
+
+    // ------------------------------------------------------------------
     // Inicialización
     // ------------------------------------------------------------------
     document.addEventListener('DOMContentLoaded', () => {
@@ -188,34 +347,8 @@
             el.remove();
         });
 
-        // Navbar: sombra al hacer scroll y menú móvil
-        const nav = document.getElementById('siteNav');
-        const toggle = document.getElementById('navToggle');
-        const onScroll = () => nav && nav.classList.toggle('navbar-scrolled', window.scrollY > 20);
-        window.addEventListener('scroll', onScroll, { passive: true });
-        onScroll();
-        if (toggle) {
-            toggle.addEventListener('click', () => {
-                const open = document.body.classList.toggle('nav-open');
-                toggle.setAttribute('aria-expanded', String(open));
-            });
-        }
-
-        // Animación de aparición al hacer scroll
-        const reveals = document.querySelectorAll('.reveal');
-        if ('IntersectionObserver' in window) {
-            const io = new IntersectionObserver(entries => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        entry.target.classList.add('in');
-                        io.unobserve(entry.target);
-                    }
-                });
-            }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
-            reveals.forEach(el => io.observe(el));
-        } else {
-            reveals.forEach(el => el.classList.add('in'));
-        }
+        initChrome();
+        initMotion();
 
         // Inclinación 3D con brillo en tarjetas de producto (solo con ratón)
         if (window.matchMedia('(hover: hover) and (pointer: fine)').matches && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {

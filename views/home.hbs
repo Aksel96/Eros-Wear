@@ -1,77 +1,63 @@
-{{!-- ============================================================= --}}
-{{!-- HERO                                                          --}}
-{{!-- ============================================================= --}}
+{{!-- HERO --}}
 <section class="hero grain">
-    <div class="hero-bg-word" aria-hidden="true">EROS</div>
-    <div class="container">
-        <div class="row align-items-center g-5">
-            <div class="col-lg-6">
-                <span class="eyebrow reveal">Catálogo 2026 · Hecho en México</span>
-                <h1 class="hero-title reveal reveal-d1">
-                    Viste la
-                    <span class="outline">audacia</span>
-                    <span class="script">elegancia sin miedo</span>
-                </h1>
-                <p class="hero-copy reveal reveal-d2">
-                    Fusionamos el corte clásico con el pulso del street wear. Explora el catálogo,
-                    combina prendas en el probador y comparte tus looks con la comunidad.
-                </p>
-                <div class="hero-actions reveal reveal-d3">
-                    <a href="/shop" class="btn-eros">Explorar catálogo {{{icon 'arrow'}}}</a>
-                    <a href="/tester" class="btn-light-ghost">Crear un outfit</a>
-                </div>
+    <div class="hero-bg-word" aria-hidden="true" data-parallax="-0.12">EROS</div>
+    <div class="wrap">
+        <div>
+            <span class="eyebrow" data-hero style="--h:0">Catálogo 2026 · Hecho en México</span>
+            <h1 class="hero-title" data-hero style="--h:1">
+                Viste la
+                <span class="outline">audacia</span>
+                <span class="script">elegancia sin miedo</span>
+            </h1>
+            <p class="hero-copy" data-hero style="--h:2">
+                Fusionamos el corte clásico con el pulso del street wear. Explora el catálogo,
+                combina prendas en el probador y comparte tus looks con la comunidad.
+            </p>
+            <div class="hero-actions" data-hero style="--h:3">
+                <a href="/shop" class="btn">Explorar catálogo {{{icon 'arrow'}}}</a>
+                <a href="/tester" class="btn btn-light">Crear un outfit</a>
             </div>
+        </div>
 
-            <div class="col-lg-6">
-                <div class="hero-visual">
-                    <div class="hero-ring"></div>
-                    <svg class="hero-stamp" viewBox="0 0 120 120" aria-hidden="true">
-                        <defs><path id="stampCircle" d="M60,60 m-46,0 a46,46 0 1,1 92,0 a46,46 0 1,1 -92,0"/></defs>
-                        <text><textPath href="#stampCircle">Eros Wear ✦ Atrevimiento ✦ Elegancia ✦</textPath></text>
-                    </svg>
-                    <img src="/img/garments/chaqueta-morada.png" alt="Chaqueta Amethyst Rebel de Eros Wear" class="hero-garment">
-                    {{#if stats}}
-                        <div class="hero-badge b1">
-                            <strong>{{stats.garments}}</strong>
-                            prendas en catálogo
-                        </div>
-                        <div class="hero-badge b2">
-                            <strong>{{stats.outfits}}</strong>
-                            outfits creados
-                        </div>
-                    {{/if}}
-                </div>
-            </div>
+        <div class="hero-visual" data-hero style="--h:2" data-parallax="0.08">
+            <div class="hero-ring"></div>
+            <svg class="hero-stamp" viewBox="0 0 120 120" aria-hidden="true">
+                <defs><path id="stampCircle" d="M60,60 m-46,0 a46,46 0 1,1 92,0 a46,46 0 1,1 -92,0"/></defs>
+                <text><textPath href="#stampCircle">Eros Wear ✦ Atrevimiento ✦ Elegancia ✦</textPath></text>
+            </svg>
+            <img src="/img/garments/chaqueta-morada.png" alt="Chaqueta Amethyst Rebel de Eros Wear" class="hero-garment" fetchpriority="high">
+            {{#if stats}}
+                <div class="hero-badge b1"><strong>{{stats.garments}}</strong>prendas en catálogo</div>
+                <div class="hero-badge b2"><strong>{{stats.outfits}}</strong>outfits creados</div>
+            {{/if}}
         </div>
     </div>
     <div class="hero-scroll">Desliza</div>
 </section>
 
-{{> marquee tilted=true}}
+{{> marquee}}
 
 {{#if dbError}}
-    <div class="container mt-5">
+    <div class="wrap section tight-top" style="padding-top:2rem">
         <div class="db-alert">No pudimos conectar con la base de datos. Revisa la configuración y vuelve a intentarlo.</div>
     </div>
 {{/if}}
 
-{{!-- ============================================================= --}}
-{{!-- TENDENCIA                                                     --}}
-{{!-- ============================================================= --}}
+{{!-- TENDENCIA --}}
 <section class="section">
-    <div class="container">
-        <div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-5">
-            <div class="reveal">
+    <div class="wrap">
+        <div class="section-head">
+            <div data-reveal="up">
                 <span class="eyebrow">#TrendingTopic</span>
-                <h2 class="section-title">En <em>tendencia</em><br>esta semana</h2>
+                <h2 class="title">En <em>tendencia</em><br>esta semana</h2>
             </div>
-            <a href="/shop" class="btn-ghost reveal">Ver todo el catálogo {{{icon 'arrow'}}}</a>
+            <a href="/shop" class="btn btn-ghost btn-sm" data-reveal="up">Ver todo el catálogo {{{icon 'arrow'}}}</a>
         </div>
 
         {{#if trending}}
-            <div class="rail reveal">
+            <div class="rail" data-stagger>
                 {{#each trending}}
-                    <a href="/product/{{id}}" class="trend-card">
+                    <a href="/product/{{id}}" class="trend-card" data-reveal="up" style="--i:{{@index}}">
                         <div class="trend-word" aria-hidden="true">{{name}} {{name}} {{name}} {{name}}</div>
                         <img src="{{image_url}}" alt="{{name}}" loading="lazy">
                         <div class="trend-info">
@@ -95,196 +81,160 @@
     </div>
 </section>
 
-{{!-- ============================================================= --}}
-{{!-- MANIFIESTO / SOBRE NOSOTROS                                   --}}
-{{!-- ============================================================= --}}
-<section class="section section-white" id="nosotros">
-    <div class="container">
-        <div class="row g-5 align-items-center">
-            <div class="col-lg-5 reveal">
-                <div class="about-visual">
-                    <img src="/img/garments/Peach Sunrise.png" alt="Chaqueta Peach Sunrise" loading="lazy">
-                    <div class="about-caption">
-                        <div>
-                            <small>Última colección</small>
-                            <strong>Peach Sunrise</strong>
-                        </div>
-                        <a href="/shop" class="btn-rose btn-sm-eros">Ver</a>
+{{!-- MANIFIESTO --}}
+<section class="section light" id="nosotros">
+    <div class="wrap split">
+        <div data-reveal="mask">
+            <div class="about-visual">
+                <img src="/img/garments/Peach Sunrise.png" alt="Chaqueta Peach Sunrise" loading="lazy" data-parallax="0.06">
+                <div class="about-caption">
+                    <div>
+                        <small>Última colección</small>
+                        <strong>Peach Sunrise</strong>
                     </div>
+                    <a href="/shop" class="btn btn-rose btn-sm">Ver</a>
                 </div>
             </div>
-            <div class="col-lg-7">
-                <span class="eyebrow reveal">Sobre nosotros</span>
-                <p class="manifesto-quote mt-3 reveal reveal-d1">
-                    Inspirados en <span>Eros</span>, símbolo del deseo y la atracción, creamos prendas
-                    para quienes no temen <span class="rose">destacar</span>.
-                </p>
-                <ul class="value-list">
-                    <li class="reveal reveal-d1">
-                        <span class="num">01</span>
-                        <div>
-                            <h4>Mitología y street wear</h4>
-                            <p>Cortes clásicos con texturas y siluetas contemporáneas. Cada pieza es una declaración.</p>
-                        </div>
-                    </li>
-                    <li class="reveal reveal-d2">
-                        <span class="num">02</span>
-                        <div>
-                            <h4>Orgullosamente mexicana</h4>
-                            <p>Conceptualizamos y diseñamos en México, apostando por el talento local y una calidad que trasciende fronteras.</p>
-                        </div>
-                    </li>
-                    <li class="reveal reveal-d3">
-                        <span class="num">03</span>
-                        <div>
-                            <h4>Tu estilo, tu firma</h4>
-                            <p>Combina, crea y comparte. La comunidad Eros se construye con cada outfit que diseñas.</p>
-                        </div>
-                    </li>
-                </ul>
-            </div>
+        </div>
+        <div>
+            <span class="eyebrow" data-reveal="up">Sobre nosotros</span>
+            <p class="manifesto" data-split>Inspirados en <span>Eros</span>, símbolo del deseo y la atracción, creamos prendas para quienes no temen <span class="rose">destacar</span>.</p>
+            <ul class="value-list" data-stagger>
+                <li data-reveal="up" style="--i:0">
+                    <span class="num">01</span>
+                    <div><h4>Mitología y street wear</h4><p>Cortes clásicos con texturas y siluetas contemporáneas. Cada pieza es una declaración.</p></div>
+                </li>
+                <li data-reveal="up" style="--i:1">
+                    <span class="num">02</span>
+                    <div><h4>Orgullosamente mexicana</h4><p>Conceptualizamos y diseñamos en México, apostando por el talento local y una calidad que trasciende fronteras.</p></div>
+                </li>
+                <li data-reveal="up" style="--i:2">
+                    <span class="num">03</span>
+                    <div><h4>Tu estilo, tu firma</h4><p>Combina, crea y comparte. La comunidad Eros se construye con cada outfit que diseñas.</p></div>
+                </li>
+            </ul>
         </div>
     </div>
 </section>
 
-{{!-- ============================================================= --}}
-{{!-- OUTFITS POPULARES                                             --}}
-{{!-- ============================================================= --}}
-<section class="section section-dark grain">
-    <div class="container position-relative" style="z-index: 2;">
-        <div class="row g-4 align-items-end mb-5">
-            <div class="col-lg-7 reveal">
+{{!-- OUTFITS POPULARES --}}
+<section class="section dark grain">
+    <div class="wrap" style="position:relative;z-index:2;">
+        <div class="section-head">
+            <div data-reveal="up">
                 <span class="eyebrow">Hall of fame</span>
-                <h2 class="section-title">Outfits <em>más</em><br>amados</h2>
+                <h2 class="title">Outfits <em>más</em><br>amados</h2>
             </div>
-            <div class="col-lg-5 reveal reveal-d1">
-                {{#if stats}}
-                    <div class="stats-strip">
-                        <div><strong>{{stats.garments}}</strong><span>Prendas</span></div>
-                        <div><strong>{{stats.outfits}}</strong><span>Outfits</span></div>
-                        <div><strong>{{stats.creators}}</strong><span>Creadores</span></div>
-                    </div>
-                {{/if}}
-            </div>
+            {{#if stats}}
+                <div class="stats-strip" data-reveal="up" data-d="150" style="min-width:min(100%,360px)">
+                    <div><strong data-count="{{stats.garments}}">{{stats.garments}}</strong><span>Prendas</span></div>
+                    <div><strong data-count="{{stats.outfits}}">{{stats.outfits}}</strong><span>Outfits</span></div>
+                    <div><strong data-count="{{stats.creators}}">{{stats.creators}}</strong><span>Creadores</span></div>
+                </div>
+            {{/if}}
         </div>
 
         {{#if topOutfits}}
-            <div class="row g-4">
+            <div class="grid grid-cards" data-stagger>
                 {{#each topOutfits}}
-                    <div class="col-sm-6 col-lg-4 reveal">
-                        <article class="outfit-card podium-card">
-                            <div class="outfit-stage dark">
-                                <span class="rank">{{pad (add @index 1)}}</span>
-                                <div class="outfit-render" data-outfit-items="{{json items}}">
-                                    <div class="outfit-loading">Cargando</div>
-                                </div>
+                    <article class="outfit-card podium-card" data-reveal="up" style="--i:{{@index}}">
+                        <div class="outfit-stage dark">
+                            <span class="rank">{{pad (add @index 1)}}</span>
+                            <div class="outfit-render" data-outfit-items="{{json items}}">
+                                <div class="outfit-loading">Cargando</div>
                             </div>
-                            <div class="outfit-body">
-                                <h3>{{name}}</h3>
-                                <div class="outfit-footer">
-                                    <span class="outfit-creator"><span class="avatar">{{initial creator}}</span>{{creator}}</span>
-                                    <span class="like-static">{{{icon 'heart' filled=true}}} {{likesCount}}</span>
-                                </div>
-                                <button type="button" class="btn-rose btn-sm-eros w-100" data-add-look="{{json (lookIds items)}}">{{{icon 'bag'}}} Comprar este look</button>
+                        </div>
+                        <div class="outfit-body">
+                            <h3>{{name}}</h3>
+                            <div class="outfit-footer">
+                                <span class="outfit-creator"><span class="avatar">{{initial creator}}</span>{{creator}}</span>
+                                <span class="like-static">{{{icon 'heart' filled=true}}} {{likesCount}}</span>
                             </div>
-                        </article>
-                    </div>
+                            <button type="button" class="btn btn-rose btn-sm btn-block" data-add-look="{{json (lookIds items)}}">{{{icon 'bag'}}} Comprar este look</button>
+                        </div>
+                    </article>
                 {{/each}}
             </div>
-            <div class="text-center mt-5">
-                <a href="/gallery?sort_by=likes" class="btn-light-ghost">Ver toda la galería {{{icon 'arrow'}}}</a>
+            <div class="center mt-4" data-reveal="up">
+                <a href="/gallery?sort_by=likes" class="btn btn-light">Ver toda la galería {{{icon 'arrow'}}}</a>
             </div>
         {{else}}
             <div class="empty-state">
                 <div class="empty-icon">{{{icon 'sparkle'}}}</div>
-                <h3 class="text-white">Aún no hay outfits destacados</h3>
+                <h3>Aún no hay outfits destacados</h3>
                 <p>Sé la primera persona en crear uno y aparecer aquí.</p>
-                <a href="/tester" class="btn-eros">Ir al probador</a>
+                <a href="/tester" class="btn">Ir al probador</a>
             </div>
         {{/if}}
     </div>
 </section>
 
-{{!-- ============================================================= --}}
-{{!-- CÓMO FUNCIONA                                                 --}}
-{{!-- ============================================================= --}}
+{{!-- EL PROBADOR --}}
 <section class="section">
-    <div class="container">
-        <div class="text-center mb-5 reveal">
+    <div class="wrap">
+        <div class="center mb-4" data-reveal="up">
             <span class="eyebrow">El probador</span>
-            <h2 class="section-title">Tu estudio de <em>estilo</em></h2>
+            <h2 class="title">Tu estudio de <em>estilo</em></h2>
         </div>
-        <div class="row g-4">
-            <div class="col-md-4 reveal">
-                <div class="step-card">
-                    <span class="step-num">01</span>
-                    <div class="step-icon">{{{icon 'hanger'}}}</div>
-                    <h3>Elige</h3>
-                    <p>Recorre el catálogo y agrega a tu probador las prendas que te llamen.</p>
-                </div>
+        <div class="grid grid-steps" data-stagger>
+            <div class="step-card" data-reveal="up" style="--i:0">
+                <span class="step-num">01</span>
+                <div class="step-icon">{{{icon 'hanger'}}}</div>
+                <h3>Elige</h3>
+                <p>Recorre el catálogo y agrega a tu probador las prendas que te llamen.</p>
             </div>
-            <div class="col-md-4 reveal reveal-d1">
-                <div class="step-card">
-                    <span class="step-num">02</span>
-                    <div class="step-icon">{{{icon 'layers'}}}</div>
-                    <h3>Combina</h3>
-                    <p>Arrastra y acomoda cada pieza en el lienzo hasta encontrar tu look.</p>
-                </div>
+            <div class="step-card" data-reveal="up" style="--i:1">
+                <span class="step-num">02</span>
+                <div class="step-icon">{{{icon 'layers'}}}</div>
+                <h3>Combina</h3>
+                <p>Arrastra y acomoda cada pieza en el lienzo hasta encontrar tu look.</p>
             </div>
-            <div class="col-md-4 reveal reveal-d2">
-                <div class="step-card">
-                    <span class="step-num">03</span>
-                    <div class="step-icon">{{{icon 'share'}}}</div>
-                    <h3>Comparte</h3>
-                    <p>Guarda tu outfit en la galería y recibe likes de la comunidad.</p>
-                </div>
+            <div class="step-card" data-reveal="up" style="--i:2">
+                <span class="step-num">03</span>
+                <div class="step-icon">{{{icon 'share'}}}</div>
+                <h3>Comparte</h3>
+                <p>Guarda tu outfit en la galería y recibe likes de la comunidad.</p>
             </div>
         </div>
-        <div class="text-center mt-5 reveal">
-            <a href="{{#if user}}/tester{{else}}/register{{/if}}" class="btn-eros">
+        <div class="center mt-4" data-reveal="up">
+            <a href="{{#if user}}/tester{{else}}/register{{/if}}" class="btn">
                 {{#if user}}Abrir mi probador{{else}}Crear mi cuenta gratis{{/if}} {{{icon 'arrow'}}}
             </a>
         </div>
     </div>
 </section>
 
-{{!-- ============================================================= --}}
-{{!-- CÓMO PEDIR                                                    --}}
-{{!-- ============================================================= --}}
-<section class="section section-dark grain" id="como-pedir">
-    <div class="container position-relative" style="z-index: 2;">
-        <div class="mb-5 reveal">
+{{!-- CÓMO PEDIR --}}
+<section class="section dark grain" id="como-pedir">
+    <div class="wrap" style="position:relative;z-index:2;">
+        <div class="mb-4" data-reveal="up">
             <span class="eyebrow">Cómo pedir</span>
-            <h2 class="section-title">Pide en <em>cuatro</em> pasos</h2>
-            <p class="section-lead mt-3">Sin pago en línea: atención personal por WhatsApp.</p>
+            <h2 class="title">Pide en <em>cuatro</em> pasos</h2>
+            <p class="lead text-soft mt-2">Sin pago en línea: atención personal por WhatsApp.</p>
         </div>
-        <div class="row g-4 how-grid">
-            <div class="col-md-6 col-lg-3 reveal"><div class="how-card"><h3>Elige</h3><p>Explora el catálogo y revisa tallas y disponibilidad de cada prenda.</p></div></div>
-            <div class="col-md-6 col-lg-3 reveal reveal-d1"><div class="how-card"><h3>Arma tu carrito</h3><p>Agrega varias prendas, ajusta cantidades y mira tu total al instante.</p></div></div>
-            <div class="col-md-6 col-lg-3 reveal reveal-d2"><div class="how-card"><h3>Envía por WhatsApp</h3><p>Con un clic mandamos tu pedido ya armado, con tu referencia.</p></div></div>
-            <div class="col-md-6 col-lg-3 reveal reveal-d3"><div class="how-card"><h3>Coordinamos</h3><p>Confirmamos disponibilidad, forma de pago y entrega contigo.</p></div></div>
+        <div class="grid grid-how" data-stagger>
+            <div class="how-card" data-reveal="up" style="--i:0"><h3>Elige</h3><p>Explora el catálogo y revisa tallas y disponibilidad de cada prenda.</p></div>
+            <div class="how-card" data-reveal="up" style="--i:1"><h3>Arma tu carrito</h3><p>Agrega varias prendas, ajusta cantidades y mira tu total al instante.</p></div>
+            <div class="how-card" data-reveal="up" style="--i:2"><h3>Envía por WhatsApp</h3><p>Con un clic mandamos tu pedido ya armado, con tu referencia.</p></div>
+            <div class="how-card" data-reveal="up" style="--i:3"><h3>Coordinamos</h3><p>Confirmamos disponibilidad, forma de pago y entrega contigo.</p></div>
         </div>
     </div>
 </section>
 
-{{!-- ============================================================= --}}
-{{!-- NEWSLETTER                                                    --}}
-{{!-- ============================================================= --}}
-<section class="section pt-0">
-    <div class="container">
-        <div class="newsletter reveal">
-            <div class="row align-items-center g-4">
-                <div class="col-lg-6">
-                    <span class="eyebrow" style="color: var(--rose-300);">Newsletter</span>
-                    <h2 class="section-title" style="font-size: clamp(2rem, 4vw, 3.2rem);">Sé el primero<br>en saberlo</h2>
-                </div>
-                <div class="col-lg-6">
-                    <p class="text-soft mb-3">Lanzamientos, colaboraciones y drops exclusivos directo a tu bandeja de entrada.</p>
-                    <form id="newsletter-form" class="newsletter-form" novalidate>
-                        <input type="email" placeholder="tu@correo.com" aria-label="Correo electrónico" required>
-                        <button class="btn-rose" type="submit">Suscribirme</button>
-                    </form>
-                </div>
+{{!-- NEWSLETTER --}}
+<section class="section">
+    <div class="wrap">
+        <div class="newsletter" data-reveal="zoom">
+            <div>
+                <span class="eyebrow" style="color: var(--rose-300);">Newsletter</span>
+                <h2 class="title" style="color:#fff;font-size:clamp(2rem,6vw,3.2rem)">Sé el primero<br>en saberlo</h2>
+            </div>
+            <div>
+                <p class="text-soft mb-2" style="color:rgba(255,255,255,.75)">Lanzamientos, colaboraciones y drops exclusivos directo a tu bandeja de entrada.</p>
+                <form id="newsletter-form" class="newsletter-form" novalidate>
+                    <input type="email" placeholder="tu@correo.com" aria-label="Correo electrónico" required>
+                    <button class="btn btn-rose" type="submit">Suscribirme</button>
+                </form>
             </div>
         </div>
     </div>

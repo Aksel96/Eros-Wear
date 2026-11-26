@@ -42,11 +42,6 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public'), {
     maxAge: isProd ? '7d' : 0
 }));
-// Bootstrap servido desde node_modules (sin depender de un CDN externo)
-app.use('/vendor/bootstrap', express.static(path.join(__dirname, 'node_modules', 'bootstrap', 'dist'), {
-    maxAge: isProd ? '30d' : 0
-}));
-
 if (!process.env.SESSION_SECRET) {
     console.warn('SESSION_SECRET no está definido; usando un valor temporal. Defínelo en producción.');
 }

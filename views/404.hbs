@@ -1,12 +1,11 @@
 <section class="error-page grain">
-    <div class="hero-bg-word" aria-hidden="true">EROS</div>
-    <div class="position-relative" style="z-index: 2;">
+    <div>
         <div class="code">{{#if code}}{{code}}{{else}}404{{/if}}</div>
         <h1>{{#if message}}Algo salió mal{{else}}Esta página se fue de fiesta{{/if}}</h1>
         <p>{{#if message}}{{message}}{{else}}No encontramos lo que buscas. Quizá cambió de lugar o nunca existió.{{/if}}</p>
-        <div class="d-flex flex-wrap justify-content-center gap-2">
-            <a href="/" class="btn-eros">Volver al inicio</a>
-            <a href="/shop" class="btn-light-ghost">Ver catálogo</a>
+        <div class="cluster">
+            <a href="/" class="btn">Volver al inicio</a>
+            <a href="/shop" class="btn btn-light">Ver catálogo</a>
         </div>
     </div>
 </section>

@@ -22,8 +22,10 @@
     }
     function updateBadge(count) {
         document.querySelectorAll('.cart-count').forEach(el => {
+            const changed = el.textContent !== String(count);
             el.textContent = count;
-            el.classList.toggle('d-none', count === 0);
+            el.classList.toggle('is-hidden', count === 0);
+            if (changed && count > 0) { el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump'); }
         });
     }
 
@@ -97,7 +99,7 @@
             <div class="cart-info">
                 <a href="/product/${l.garmentId}" class="cart-name">${esc(l.name)}</a>
                 <div class="cart-controls">
-                    <select class="select-eros cart-size" aria-label="Talla de ${esc(l.name)}">${options}</select>
+                    <select class="select select-sm cart-size" style="width:auto" aria-label="Talla de ${esc(l.name)}">${options}</select>
                     <div class="qty" role="group" aria-label="Cantidad">
                         <button type="button" data-act="dec" aria-label="Menos">&minus;</button>
                         <span>${l.qty}</span>
@@ -120,7 +122,7 @@
         updateBadge(read().reduce((n, i) => n + i.qty, 0));
 
         if (view === 'done' && lastOrder) {
-            footer.classList.add('d-none');
+            footer.classList.add('is-hidden');
             body.innerHTML = `
                 <div class="cart-done">
                     <div class="empty-icon">${checkIcon()}</div>
@@ -128,29 +130,29 @@
                     <p class="mb-1">Tu referencia es <strong>${esc(lastOrder.reference)}</strong>.</p>
                     ${lastOrder.whatsappUrl
                         ? `<p>Un último paso: envía el mensaje por WhatsApp para que confirmemos disponibilidad, pago y entrega.</p>
-                           <a class="btn-eros w-100" href="${esc(lastOrder.whatsappUrl)}" target="_blank" rel="noopener">Abrir WhatsApp</a>`
+                           <a class="btn btn-block" href="${esc(lastOrder.whatsappUrl)}" target="_blank" rel="noopener">Abrir WhatsApp</a>`
                         : `<p>Por ahora el contacto por WhatsApp no está configurado. Copia tu pedido y envíalo a la marca:</p>
-                           <textarea class="form-control mb-2" rows="7" readonly>${esc(lastOrder.message)}</textarea>
-                           <button type="button" class="btn-eros w-100" data-act="copy">Copiar pedido</button>`}
-                    <button type="button" class="btn-ghost w-100 mt-2" data-act="back">Seguir viendo el catálogo</button>
+                           <textarea class="input" rows="7" readonly>${esc(lastOrder.message)}</textarea>
+                           <button type="button" class="btn btn-block" data-act="copy">Copiar pedido</button>`}
+                    <button type="button" class="btn btn-ghost btn-block" data-act="back">Seguir viendo el catálogo</button>
                 </div>`;
             return;
         }
 
         if (!state.lines.length) {
-            footer.classList.add('d-none');
+            footer.classList.add('is-hidden');
             body.innerHTML = `
                 <div class="cart-empty">
                     <div class="empty-icon">${bagIcon()}</div>
                     <h3>Tu carrito está vacío</h3>
                     <p>Agrega prendas del catálogo y envía tu pedido por WhatsApp.</p>
-                    <a href="/shop" class="btn-eros" data-bs-dismiss="offcanvas">Ver catálogo</a>
+                    <a href="/shop" class="btn" data-act="back">Ver catálogo</a>
                 </div>`;
             return;
         }
 
         body.innerHTML = `<ul class="cart-lines">${state.lines.map(lineHtml).join('')}</ul>`;
-        footer.classList.remove('d-none');
+        footer.classList.remove('is-hidden');
         document.getElementById('cartTotal').textContent = money(state.total);
         const blocked = state.lines.some(l => l.issue && !l.issue.startsWith('Solo quedan')) || state.total <= 0;
         const btn = document.getElementById('cartSend');
@@ -213,7 +215,8 @@
     // ------------------------------------------------------------------
     function open() {
         const el = document.getElementById('cartDrawer');
-        if (el && window.bootstrap) bootstrap.Offcanvas.getOrCreateInstance(el).show();
+        if (!el || !window.ErosLayers) return;
+        window.ErosLayers.open(el);
     }
 
     document.addEventListener('DOMContentLoaded', () => {
@@ -221,7 +224,8 @@
         if (!drawer) return;
         updateBadge(read().reduce((n, i) => n + i.qty, 0));
 
-        drawer.addEventListener('show.bs.offcanvas', () => {
+        window.addEventListener('eros:layer-open', e => {
+            if (e.detail !== 'cartDrawer') return;
             if (view === 'done') { view = 'cart'; lastOrder = null; }
             refresh();
         });
@@ -235,7 +239,7 @@
             if (act === 'inc') mutate(idx, item => { item.qty = Math.min(MAX_QTY, item.qty + 1); });
             if (act === 'dec') mutate(idx, item => { if (item.qty <= 1) return false; item.qty -= 1; });
             if (act === 'remove') mutate(idx, () => false);
-            if (act === 'back') { bootstrap.Offcanvas.getInstance(drawer).hide(); }
+            if (act === 'back') { window.ErosLayers.close(); }
             if (act === 'copy' && lastOrder) {
                 navigator.clipboard.writeText(lastOrder.message).then(() => ErosUI.toast('Pedido copiado.', 'success', 2200));
             }

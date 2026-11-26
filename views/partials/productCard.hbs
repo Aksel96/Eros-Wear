@@ -6,10 +6,10 @@
         {{#unless (gt total_stock 0)}}<span class="stock-flag out">Agotado</span>{{else}}{{#if (lte total_stock 5)}}<span class="stock-flag">Últimas piezas</span>{{/if}}{{/unless}}
     </a>
     <div class="product-body">
-        <h3 class="product-name"><a href="/product/{{id}}" style="color: inherit;">{{name}}</a></h3>
-        <div class="price-row"><span class="price">{{money price}}</span></div>
+        <h3 class="product-name"><a href="/product/{{id}}">{{name}}</a></h3>
+        <span class="price">{{money price}}</span>
         <div class="card-actions">
-            <a href="/product/{{id}}" class="{{#if (gt total_stock 0)}}btn-eros{{else}}btn-ghost{{/if}}">{{#if (gt total_stock 0)}}Elegir talla{{else}}Ver detalle{{/if}}</a>
+            <a href="/product/{{id}}" class="btn {{#unless (gt total_stock 0)}}btn-ghost{{/unless}}">{{#if (gt total_stock 0)}}Elegir talla{{else}}Ver detalle{{/if}}</a>
         </div>
     </div>
 </article>

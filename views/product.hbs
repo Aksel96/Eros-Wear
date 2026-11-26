@@ -1,62 +1,58 @@
 <section class="pdp">
-    <div class="container">
+    <div class="wrap">
         <nav class="crumbs" aria-label="Ruta">
             <a href="/">Inicio</a> / <a href="/shop">Catálogo</a> / <a href="/shop?category={{garment.category}}">{{categoryLabel garment.category}}</a> / {{garment.name}}
         </nav>
 
-        <div class="row g-5">
-            <div class="col-lg-7">
-                <div class="pdp-stage" id="pdpStage" data-tilt>
-                    <div class="stage-word" aria-hidden="true">{{garment.name}}</div>
-                    <img src="{{garment.image_url}}" alt="{{garment.name}}" id="pdpImage">
-                    <span class="shine"></span>
-                    <span class="hint" id="pdpHint">Toca para hacer zoom</span>
-                </div>
+        <div class="pdp-grid">
+            <div class="pdp-stage" id="pdpStage" data-tilt data-reveal="zoom">
+                <div class="stage-word" aria-hidden="true">{{garment.name}}</div>
+                <img src="{{garment.image_url}}" alt="{{garment.name}}" id="pdpImage">
+                <span class="shine"></span>
+                <span class="hint" id="pdpHint">Toca para hacer zoom</span>
             </div>
 
-            <div class="col-lg-5">
-                <div class="pdp-info">
-                    <span class="eyebrow">{{categoryLabel garment.category}}</span>
-                    <h1>{{garment.name}}</h1>
-                    <div class="pdp-price">{{money garment.price}}<small>MXN · IVA incluido</small></div>
-                    {{#if garment.description}}<p class="pdp-desc">{{garment.description}}</p>{{/if}}
+            <div class="pdp-info" data-reveal="up" data-d="120">
+                <span class="eyebrow">{{categoryLabel garment.category}}</span>
+                <h1>{{garment.name}}</h1>
+                <div class="pdp-price">{{money garment.price}}<small>MXN · IVA incluido</small></div>
+                {{#if garment.description}}<p class="pdp-desc">{{garment.description}}</p>{{/if}}
 
-                    <ul class="pdp-meta">
-                        {{#if garment.material}}<li>{{{icon 'layers'}}} {{garment.material}}</li>{{/if}}
-                        <li>{{{icon 'heart'}}} {{garment.total_favorites}} personas la tienen en su probador</li>
-                        <li>{{{icon 'hanger'}}} Usada en {{garment.total_usage}} outfits de la comunidad</li>
-                    </ul>
+                <ul class="pdp-meta">
+                    {{#if garment.material}}<li>{{{icon 'layers'}}} {{garment.material}}</li>{{/if}}
+                    <li>{{{icon 'heart'}}} {{garment.total_favorites}} personas la tienen en su probador</li>
+                    <li>{{{icon 'hanger'}}} Usada en {{garment.total_usage}} outfits de la comunidad</li>
+                </ul>
 
-                    {{#if (gt garment.totalStock 0)}}
-                        <div class="size-label"><span>Talla</span><span>Elige una disponible</span></div>
-                        <div class="size-grid" role="radiogroup" aria-label="Talla">
-                            {{#each garment.sizes}}
-                                <input type="radio" name="size" id="size-{{size}}" value="{{size}}" {{#if soldOut}}disabled{{/if}}>
-                                <label for="size-{{size}}">{{size}}{{#if low}}<small>últimas {{stock}}</small>{{/if}}</label>
-                            {{/each}}
-                        </div>
-                        <div class="buy-row">
-                            <div class="qty" role="group" aria-label="Cantidad">
-                                <button type="button" id="qtyDec" aria-label="Menos">&minus;</button>
-                                <span id="qtyValue">1</span>
-                                <button type="button" id="qtyInc" aria-label="Más">+</button>
-                            </div>
-                            <button type="button" class="btn-eros" data-add-to-cart="{{garment.id}}" data-size-source="input[name=size]" data-qty-source="#qtyValue">
-                                {{{icon 'bag'}}} Agregar al carrito
-                            </button>
-                        </div>
-                    {{else}}
-                        <div class="db-alert mb-3">Esta prenda está agotada por el momento.</div>
-                    {{/if}}
-
-                    <p class="pdp-whatsapp">
-                        Sin pago en línea: envías tu pedido por WhatsApp y coordinamos pago y entrega contigo.
-                        {{#if whatsappUrl}}¿Dudas? <a href="{{whatsappUrl}}" target="_blank" rel="noopener">Escríbenos</a>.{{/if}}
-                    </p>
-
-                    <div class="d-flex flex-wrap gap-2 mt-4">
-                        {{#if user}}<a href="/tester" class="btn-ghost btn-sm-eros">Probarla en mi lienzo</a>{{else}}<a href="/register" class="btn-ghost btn-sm-eros">Crea tu cuenta para probarla</a>{{/if}}
+                {{#if (gt garment.totalStock 0)}}
+                    <div class="size-label"><span>Talla</span><span>Elige una disponible</span></div>
+                    <div class="size-grid" role="radiogroup" aria-label="Talla">
+                        {{#each garment.sizes}}
+                            <input type="radio" name="size" id="size-{{size}}" value="{{size}}" {{#if soldOut}}disabled{{/if}}>
+                            <label for="size-{{size}}">{{size}}{{#if low}}<small>últimas {{stock}}</small>{{/if}}</label>
+                        {{/each}}
                     </div>
+                    <div class="buy-row is-sticky">
+                        <div class="qty" role="group" aria-label="Cantidad">
+                            <button type="button" id="qtyDec" aria-label="Menos">&minus;</button>
+                            <span id="qtyValue">1</span>
+                            <button type="button" id="qtyInc" aria-label="Más">+</button>
+                        </div>
+                        <button type="button" class="btn" data-add-to-cart="{{garment.id}}" data-size-source="input[name=size]" data-qty-source="#qtyValue">
+                            {{{icon 'bag'}}} Agregar al carrito
+                        </button>
+                    </div>
+                {{else}}
+                    <div class="db-alert mb-2">Esta prenda está agotada por el momento.</div>
+                {{/if}}
+
+                <p class="pdp-whatsapp">
+                    Sin pago en línea: envías tu pedido por WhatsApp y coordinamos pago y entrega contigo.
+                    {{#if whatsappUrl}}¿Dudas? <a href="{{whatsappUrl}}" target="_blank" rel="noopener">Escríbenos</a>.{{/if}}
+                </p>
+
+                <div class="cluster mt-3">
+                    {{#if user}}<a href="/tester" class="btn btn-ghost btn-sm">Probarla en mi lienzo</a>{{else}}<a href="/register" class="btn btn-ghost btn-sm">Crea tu cuenta para probarla</a>{{/if}}
                 </div>
             </div>
         </div>
@@ -64,28 +60,26 @@
 </section>
 
 {{#if outfits}}
-<section class="section section-dark grain">
-    <div class="container position-relative" style="z-index: 2;">
-        <div class="mb-5 reveal">
+<section class="section dark grain">
+    <div class="wrap" style="position:relative;z-index:2;">
+        <div class="mb-4" data-reveal="up">
             <span class="eyebrow">En la comunidad</span>
-            <h2 class="section-title">Así la <em>combinan</em></h2>
+            <h2 class="title">Así la <em>combinan</em></h2>
         </div>
-        <div class="row g-4">
+        <div class="grid grid-cards" data-stagger>
             {{#each outfits}}
-                <div class="col-md-6 col-lg-4 reveal">
-                    <article class="outfit-card podium-card">
-                        <div class="outfit-stage dark">
-                            <div class="outfit-render" data-outfit-items="{{json items}}"><div class="outfit-loading">Cargando</div></div>
+                <article class="outfit-card podium-card" data-reveal="up" style="--i:{{@index}}">
+                    <div class="outfit-stage dark">
+                        <div class="outfit-render" data-outfit-items="{{json items}}"><div class="outfit-loading">Cargando</div></div>
+                    </div>
+                    <div class="outfit-body">
+                        <h3>{{name}}</h3>
+                        <div class="outfit-footer">
+                            <span class="outfit-creator"><span class="avatar">{{initial creator}}</span>{{creator}}</span>
                         </div>
-                        <div class="outfit-body">
-                            <h3>{{name}}</h3>
-                            <div class="outfit-footer">
-                                <span class="outfit-creator"><span class="avatar">{{initial creator}}</span>{{creator}}</span>
-                                <button type="button" class="btn-rose btn-sm-eros btn-look" data-add-look="{{json (lookIds items)}}">Comprar este look</button>
-                            </div>
-                        </div>
-                    </article>
-                </div>
+                        <button type="button" class="btn btn-rose btn-sm btn-block" data-add-look="{{json (lookIds items)}}">{{{icon 'bag'}}} Comprar este look</button>
+                    </div>
+                </article>
             {{/each}}
         </div>
     </div>
@@ -93,17 +87,17 @@
 {{/if}}
 
 <section class="section">
-    <div class="container">
-        <div class="d-flex justify-content-between align-items-end mb-4 reveal">
-            <div><span class="eyebrow">Completa tu look</span><h2 class="section-title" style="font-size: clamp(1.8rem, 4vw, 3rem);">También te gustará</h2></div>
-            <a href="/shop" class="btn-ghost btn-sm-eros d-none d-md-inline-flex">Ver catálogo</a>
+    <div class="wrap">
+        <div class="section-head" data-reveal="up">
+            <div><span class="eyebrow">Completa tu look</span><h2 class="title" style="font-size:clamp(1.8rem,5vw,3rem)">También te gustará</h2></div>
+            <a href="/shop" class="btn btn-ghost btn-sm">Ver catálogo</a>
         </div>
-        <div class="row g-3 g-md-4">
+        <div class="grid grid-products" data-stagger>
             {{#each related}}
-                <div class="col-6 col-lg-3">{{> productCard this}}</div>
+                <div data-reveal="up" style="--i:{{@index}}">{{> productCard this}}</div>
             {{/each}}
         </div>
     </div>
 </section>
 
-<script src="/js/product.js?v=3"></script>
+<script src="/js/product.js?v=4"></script>

@@ -9,7 +9,7 @@ Elegancia audaz con corazón mexicano. Eros Wear es un catálogo interactivo de 
 - **Galería** con likes (uno por persona) y la opción de usar outfits ajenos como inspiración.
 - **Comunidad** con ranking de creadores.
 
-Stack: Node.js 18+, Express 4, Handlebars, Bootstrap 5 y MySQL 8 (compatible con TiDB).
+Stack: Node.js 18+, Express 4, Handlebars, CSS propio (mobile-first, sin frameworks) y MySQL 8 (compatible con TiDB).
 
 ## Desarrollo local
 
@@ -92,5 +92,5 @@ lib/                    helpers de Handlebars y utilidades de outfits
 database/               conexión, esquema y datos iniciales
 scripts/db-init.js      inicializa la base
 views/                  vistas Handlebars (layout + parciales)
-public/                 CSS, JS del navegador e imágenes
+public/                 CSS (app.css), JS del navegador e imágenes
 ```
